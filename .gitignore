@@ -48,3 +48,6 @@ CMakeLists.txt.user*
 
 # Build folder
 build/
+
+# VSCode folder
+.vscode/
