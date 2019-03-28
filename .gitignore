@@ -40,4 +40,8 @@ target_wrapper.*
 *.qmlproject.user.*
 
 # QtCreator CMake
+<<<<<<< HEAD
 CMakeLists.txt.user*
+=======
+CMakeLists.txt.user*
+>>>>>>> Initial commit
