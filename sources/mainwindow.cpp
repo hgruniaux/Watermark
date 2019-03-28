@@ -181,7 +181,7 @@ void MainWindow::saveImage()
 void MainWindow::saveImageFinish()
 {
     QString path = m_path;
-    m_path.insert(m_path.lastIndexOf('.'), "." + ui->watermarkForm->watermarkName());
+    m_path.insert(m_path.lastIndexOf('.'), "." + ui->watermarkForm->watermarkName() + ".finish");
     saveImage();
     m_path = path;
 }
