@@ -22,6 +22,7 @@
 // SOFTWARE.
 //
 
+#include <QDesktopServices>
 #include "reportissuedialog.hpp"
 #include "ui_reportissuedialog.h"
 
@@ -31,10 +32,32 @@ ReportIssueDialog::ReportIssueDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     connect(ui->buttonCancel, &QPushButton::clicked, this, &ReportIssueDialog::close);
-    //connect(ui->buttonSend, &QPushButton::clicked, this, &ReportIssueDialog::send);
+    connect(ui->buttonSend, &QPushButton::clicked, this, &ReportIssueDialog::send);
 }
 
 ReportIssueDialog::~ReportIssueDialog()
 {
     delete ui;
+}
+
+void ReportIssueDialog::send()
+{
+    QString body = generateBody();
+    QString url = QString("https://github.com/%0/%1/issues/new?body=%2")
+                  .arg("HubertGruniaux").arg("Watermark").arg(body);
+    QDesktopServices::openUrl(QUrl(url));
+    close();
+}
+QString ReportIssueDialog::generateBody()
+{
+    QString header = QString("**Version**: _%0_\n**Qt**: _%1_\n**OS**: _%2_\n")
+                     .arg(ui->checkIncludeVersion->isChecked() ? QApplication::applicationVersion() : "Unknown")
+                     .arg(ui->checkIncludeQtVersion->isChecked() ? qVersion() : "Unknown")
+                     .arg(ui->checkIncludeOS->isChecked() ? QSysInfo::prettyProductName() : "Unknown");
+    QString description = QString("**Description**:\n_%0_\n")
+                         .arg(ui->editDescription->toPlainText());
+    QString body = QString("%0\n%1")
+                   .arg(header)
+                   .arg(description);
+    return body;
 }

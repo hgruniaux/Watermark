@@ -39,6 +39,12 @@ public:
     explicit ReportIssueDialog(QWidget *parent = 0);
     ~ReportIssueDialog();
 
+private slots:
+    void send();
+
+private:
+    QString generateBody();
+
 private:
     Ui::ReportIssueDialog *ui;
 };
