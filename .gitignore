@@ -45,3 +45,6 @@ CMakeLists.txt.user*
 =======
 CMakeLists.txt.user*
 >>>>>>> Initial commit
+
+# Build folder
+build/
