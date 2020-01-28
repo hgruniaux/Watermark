@@ -44,7 +44,7 @@ void ReportIssueDialog::send()
 {
     QString body = generateBody();
     QString url = QString("https://github.com/%0/%1/issues/new?body=%2")
-                  .arg("HubertGruniaux").arg("Watermark").arg(body);
+                  .arg("hgruniaux").arg("Watermark").arg(body);
     QDesktopServices::openUrl(QUrl(url));
     close();
 }
