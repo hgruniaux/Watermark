@@ -314,8 +314,8 @@ void CropEditor::paintEvent(QPaintEvent*)
         // Points
         QFontMetrics metrics(painter.font());
         int padding = 0;
-        int widthTextWidth = metrics.width(width);
-        int heightTextWidth = metrics.width(height);
+        int widthTextWidth = metrics.horizontalAdvance(width);
+        int heightTextWidth = metrics.horizontalAdvance(height);
         int textHeight = metrics.height();
         double widthRadians = 12 * 2.0 * 3.141592654 / 12;
         int widthX = crop.center().x() + qRound((crop.width()/2) * qSin(widthRadians));
