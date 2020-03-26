@@ -28,10 +28,11 @@
 #include <QMainWindow>
 #include <QPixmap>
 #include <QSlider>
+#include <QRubberBand>
 #include "preset.hpp"
 
 namespace Ui {
-class MainWindow;
+    class MainWindow;
 }
 
 class IconnedDockStyle;
@@ -44,7 +45,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
     QPixmap image() const;
@@ -65,13 +66,21 @@ public slots:
     bool savePreset();
     void addPreset(const Preset& preset);
 
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
+
 private:
     void initActions();
     void initSignals();
     void initZoomWidget();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow* ui;
+    QRubberBand* m_rubberBand;
     IconnedDockStyle* m_style;
     QPixmap m_image;
     QString m_path;
