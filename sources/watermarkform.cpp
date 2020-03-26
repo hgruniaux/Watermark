@@ -183,7 +183,7 @@ void WatermarkForm::updateColor(const QColor &color)
     QColor c = color;
     c.setAlphaF(ui->spinColorOpacity->value()/100.);
     m_color = c;
-    ui->buttonPickColor->setPalette(QPalette(c));
+    ui->buttonPickColor->setStyleSheet(QString("background: %0").arg(c.name(QColor::HexRgb)));
     emit watermarkColorChanged(c);
 }
 
