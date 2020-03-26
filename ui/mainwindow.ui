@@ -37,8 +37,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>484</width>
-         <height>295</height>
+         <width>455</width>
+         <height>297</height>
         </rect>
        </property>
       </widget>
@@ -321,25 +321,25 @@
   <customwidget>
    <class>WatermarkForm</class>
    <extends>QWidget</extends>
-   <header>sources/watermarkform.hpp</header>
+   <header>watermarkform.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>CropForm</class>
    <extends>QWidget</extends>
-   <header>sources/cropform.hpp</header>
+   <header>cropform.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Editor</class>
    <extends>QWidget</extends>
-   <header>sources/editor.hpp</header>
+   <header>editor.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Preview</class>
    <extends>QWidget</extends>
-   <header>sources/preview.hpp</header>
+   <header>preview.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
