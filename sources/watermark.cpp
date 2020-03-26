@@ -24,6 +24,7 @@
 
 #include <QDataStream>
 #include <QApplication>
+#include <QStandardPaths>
 #include <QSettings>
 #include <QDebug>
 #include <QFile>
@@ -78,10 +79,8 @@ bool Watermark::load(const QString &path, QString* error)
         return false;
     }
     stream >> qtVersion;
-    if(qtVersion > QDataStream::Qt_5_12) {
-        if(error) *error = QString("Unsupported Qt version");
-        return false;
-    }
+    stream.setVersion(qtVersion);
+
     // --- Body ---
     stream >> name;
     stream >> image;
@@ -104,11 +103,8 @@ void WatermarkManager::makeDirectory()
 
 QString WatermarkManager::getDirectory()
 {
-    QString appDir = QApplication::applicationDirPath();
-    QString settingsFile = appDir + QDir::separator() + "settings.ini";
-    QString defaultDir = appDir + QDir::separator() + "watermarks";
-    QSettings settings(settingsFile, QSettings::IniFormat);
-    return settings.value("watermarks_directory", defaultDir).toString();
+    QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    return dataDir + "/watermarks/";
 }
 QString WatermarkManager::getFileExtension()
 {
@@ -119,25 +115,23 @@ QString WatermarkManager::getFile(const QString& name)
     return getDirectory() + QDir::separator() + name + getFileExtension();
 }
 
-QStringList WatermarkManager::getWatermarkFiles()
+QFileInfoList WatermarkManager::getWatermarkFiles()
 {
     QString directoryPath(getDirectory());
     QDir directory(directoryPath);
-    QStringList files = directory.entryList({"*" + getFileExtension()},
+    QFileInfoList files = directory.entryInfoList({"*" + getFileExtension()},
                                             QDir::Files | QDir::NoSymLinks);
-    for(auto& file : files) {
-        file.prepend(directoryPath + QDir::separator());
-    }
     return files;
 }
 WatermarkList WatermarkManager::getWatermarks()
 {
-    QStringList files = getWatermarkFiles();
-    WatermarkList watermarks; watermarks.reserve(files.size());
+    QFileInfoList files = getWatermarkFiles();
+    WatermarkList watermarks; 
+    watermarks.reserve(files.size());
     for(auto file : files) {
         Watermark watermark;
         QString error;
-        if(!watermark.load(file, &error)) {
+        if(!watermark.load(file.absoluteFilePath(), &error)) {
             qWarning() << "Warning: Invalid preset file" << file
                        << ", " << error;
             watermarks.append(watermark);

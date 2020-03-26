@@ -26,6 +26,7 @@
 #define WATERMARK_HPP
 
 #include <QString>
+#include <QFileInfo>
 #include <QPixmap>
 
 // ========================================================
@@ -73,7 +74,7 @@ public:
     static QString getFileExtension();
     static QString getFile(const QString& name);
 
-    static QStringList getWatermarkFiles();
+    static QFileInfoList getWatermarkFiles();
     static WatermarkList getWatermarks();
 
     static bool addWatermark(const Watermark& watermark, QString* error = nullptr);
