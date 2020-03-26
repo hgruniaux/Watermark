@@ -52,6 +52,7 @@ bool Preset::save(const QString &path, QString* error) const
     stream << watermark.originalSize;
     stream << watermark.anchor;
     stream << watermark.size;
+    stream << watermark.rotation;
     stream << watermark.alpha;
     stream << watermark.index;
     stream << watermark.color;
@@ -94,6 +95,7 @@ bool Preset::load(const QString &path, QString* error)
     stream >> watermark.originalSize;
     stream >> watermark.anchor;
     stream >> watermark.size;
+    stream >> watermark.rotation;
     stream >> watermark.alpha;
     stream >> watermark.index;
     stream >> watermark.color;

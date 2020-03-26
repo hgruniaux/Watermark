@@ -145,6 +145,7 @@ Preset MainWindow::preset(const QString& name) const
     preset.watermark.originalSize = ui->watermarkForm->watermarkOriginalSize();
     preset.watermark.anchor = ui->watermarkForm->watermarkAnchor();
     preset.watermark.index = ui->watermarkForm->watermarkIndex();
+    preset.watermark.rotation = ui->watermarkForm->watermarkRotation();
     preset.watermark.size = qRound(ui->watermarkForm->watermarkSize() * 100);
     preset.watermark.alpha = qRound(ui->watermarkForm->watermarkAlpha() * 100);
     preset.watermark.color = ui->watermarkForm->watermarkColor();
@@ -349,8 +350,10 @@ void MainWindow::initSignals()
     connect(ui->watermarkForm, &WatermarkForm::watermarkPositionChanged, ui->editor, &Editor::setWatermarkAnchor);
     connect(ui->watermarkForm, &WatermarkForm::watermarkAlphaChanged, ui->editor, &Editor::setWatermarkAlpha);
     connect(ui->watermarkForm, &WatermarkForm::watermarkSizeChanged, ui->editor, &Editor::setWatermarkSize);
+    connect(ui->watermarkForm, &WatermarkForm::watermarkRotationChanged, ui->editor, &Editor::setWatermarkRotation);
     connect(ui->watermarkForm, &WatermarkForm::watermarkColorChanged, ui->editor, &Editor::setWatermarkColor);
     connect(ui->watermarkForm, &WatermarkForm::watermarkResizeToggled, ui->editor, &Editor::setWatermarkResize);
+    connect(ui->watermarkForm, &WatermarkForm::watermarkRotateToggled, ui->editor, &Editor::setWatermarkRotate);
     connect(ui->watermarkForm, &WatermarkForm::watermarkColorizeToggled, ui->editor, &Editor::setWatermarkColorize);
     connect(ui->cropForm, &CropForm::cropResized, ui->editor, &Editor::setCropSize);
     connect(ui->cropForm, &CropForm::cropMoved, ui->editor, &Editor::setCropPosition);

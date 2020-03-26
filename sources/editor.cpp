@@ -150,6 +150,12 @@ void Editor::setWatermarkSize(qreal size)
     m_watermarkPreview->update();
     emit edited();
 }
+void Editor::setWatermarkRotation(int angle)
+{
+    m_watermarkPreview->m_rotation = angle;
+    m_watermarkPreview->update();
+    emit edited();
+}
 void Editor::setWatermarkColor(const QColor &color)
 {
     m_watermarkPreview->setColor(color);
@@ -158,6 +164,12 @@ void Editor::setWatermarkColor(const QColor &color)
 void Editor::setWatermarkResize(bool resize)
 {
     m_watermarkPreview->m_resize = resize;
+    m_watermarkPreview->update();
+    emit edited();
+}
+void Editor::setWatermarkRotate(bool rotate)
+{
+    m_watermarkPreview->m_rotate = rotate;
     m_watermarkPreview->update();
     emit edited();
 }
@@ -487,6 +499,8 @@ WatermarkEditor::WatermarkEditor(QWidget *parent) : QWidget(parent)
     m_resize = true;
     m_alpha = 1.;
     m_size = 1.;
+    m_rotate = false;
+    m_rotation = 0;
     m_anchor = AnchorCenter;
     m_pos = QPoint(0, 0);
     m_watermark = QPixmap();
@@ -510,22 +524,45 @@ void WatermarkEditor::drawWatermark(QPainter* painter, bool scaled)
             } else {
                 size = scaled ? editor()->mapFrom(m_watermark.size()) : m_watermark.size();
             }
+
             if(m_anchor != AnchorRepeated) {
                 updatePosition();
                 rect = QRect(scaled ? editor()->mapFrom(m_pos) : m_pos, size);
             }
 
+            int rotation = 0;
+            if (m_rotate)
+                rotation = m_rotation;
+
             // Draw the watermark
             QPixmap image = (m_colorize ? m_coloredWatermark : m_watermark).scaled(size);
             if(scaled) painter->translate(crop.topLeft());
             painter->setOpacity(m_alpha);
+            painter->setClipRect(QRect(0, 0, crop.width(), crop.height()));
             if(m_anchor != AnchorRepeated) {
-                painter->drawPixmap(rect, image);
+                int width = size.width();
+                int height = size.height();
+
+                int translatedX = rect.x() + width / 2;
+                int translatedY = rect.y() + height / 2;
+
+                painter->translate(translatedX, translatedY);
+                painter->rotate(rotation);
+                painter->drawPixmap(QRect(QPoint(-width / 2, -height / 2), QSize(width, height)), image);
             } else {
                 QBrush brush(image);
                 painter->setBrush(brush);
                 painter->setPen(Qt::NoPen);
-                painter->drawRect(QRect(QPoint(0, 0), crop.size()));
+
+                int width = crop.size().width() * 2;
+                int height = crop.size().height() * 2;
+
+                int translatedX = crop.size().width() / 2;
+                int translatedY = crop.size().height() / 2;
+
+                painter->translate(translatedX, translatedY);
+                painter->rotate(rotation);
+                painter->drawRect(QRect(QPoint(-translatedX * 2, -translatedY * 2), QSize(width, height)));
             }
         }
         painter->restore();

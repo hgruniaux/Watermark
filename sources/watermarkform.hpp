@@ -48,9 +48,10 @@ public:
     bool watermarkOriginalSize() const;
     int watermarkIndex() const;
     WatermarkAnchor watermarkAnchor() const;
-    qreal watermarkSize();
-    qreal watermarkAlpha();
-    QColor watermarkColor();
+    qreal watermarkSize() const;
+    int watermarkRotation() const;
+    qreal watermarkAlpha() const;
+    QColor watermarkColor() const;
 
 public slots:
     void addWatermark();
@@ -61,6 +62,7 @@ public slots:
     void setWatermarkIndex(int index);
     void setWatermarkAnchor(WatermarkAnchor anchor);
     void setWatermarkSize(qreal size);
+    void setWatermarkRotation(int angle);
     void setWatermarkColor(const QColor& color);
     void setWatermarkAlpha(qreal alpha);
 
@@ -69,8 +71,10 @@ signals:
     void watermarkPositionChanged(WatermarkAnchor pos);
     void watermarkAlphaChanged(qreal opacity);
     void watermarkSizeChanged(qreal size);
+    void watermarkRotationChanged(int angle);
     void watermarkColorChanged(const QColor& color);
     void watermarkResizeToggled(bool resize);
+    void watermarkRotateToggled(bool rotate);
     void watermarkColorizeToggled(bool colorize);
 
 private slots:

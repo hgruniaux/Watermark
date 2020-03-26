@@ -37,7 +37,7 @@
 static constexpr int kPixmapDataRole = 1256;
 static constexpr int kTextDataRole = 1257;
 
-WatermarkForm::WatermarkForm(QWidget *parent) :
+WatermarkForm::WatermarkForm(QWidget* parent) :
     QWidget(parent),
     ui(new Ui::WatermarkForm)
 {
@@ -54,15 +54,15 @@ WatermarkForm::~WatermarkForm()
 void WatermarkForm::addWatermark()
 {
     const QString path = QFileDialog::getOpenFileName(this,
-                                                      tr("Open image"),
-                                                      QString(),
-                                                      "Images (*.jpg *.png *.gif);; Others (*)");
-    if(!path.isEmpty()) {
+        tr("Open image"),
+        QString(),
+        "Images (*.jpg *.png *.gif);; Others (*)");
+    if (!path.isEmpty()) {
         QFileInfo info = QFileInfo(path);
         QString name = info.baseName();
         QImageReader reader(path);
         const QImage image = reader.read();
-        if(!image.isNull()) {
+        if (!image.isNull()) {
             const QPixmap pix = QPixmap::fromImage(image);
             Watermark watermark;
             watermark.name = name;
@@ -84,9 +84,9 @@ void WatermarkForm::addWatermark(const Watermark& watermark)
 }
 void WatermarkForm::removeWatermark()
 {
-    if(ui->listWidget->currentRow() > 0) {
+    if (ui->listWidget->currentRow() > 0) {
         QListWidgetItem* item = ui->listWidget->currentItem();
-        if(item) {
+        if (item) {
             QString name = item->text();
             QPixmap pixmap = item->data(kPixmapDataRole).value<QPixmap>();
             ui->listWidget->removeItemWidget(item);
@@ -101,9 +101,10 @@ void WatermarkForm::removeWatermark()
 
 QString WatermarkForm::watermarkName() const
 {
-    if(ui->listWidget->currentRow() > 0) {
-       return ui->listWidget->currentItem()->text();
-    } else {
+    if (ui->listWidget->currentRow() > 0) {
+        return ui->listWidget->currentItem()->text();
+    }
+    else {
         return QString();
     }
 }
@@ -119,15 +120,19 @@ WatermarkAnchor WatermarkForm::watermarkAnchor() const
 {
     return static_cast<WatermarkAnchor>(ui->comboPosition->currentIndex());
 }
-qreal WatermarkForm::watermarkSize()
+qreal WatermarkForm::watermarkSize() const
 {
     return ui->spinSize->value() / 100.f;
 }
-qreal WatermarkForm::watermarkAlpha()
+int WatermarkForm::watermarkRotation() const
+{
+    return ui->spinRotation->value();
+}
+qreal WatermarkForm::watermarkAlpha() const
 {
     return ui->spinOpacity->value() / 100.f;
 }
-QColor WatermarkForm::watermarkColor()
+QColor WatermarkForm::watermarkColor() const
 {
     return m_color;
 }
@@ -142,13 +147,17 @@ void WatermarkForm::setWatermarkIndex(int index)
 }
 void WatermarkForm::setWatermarkSize(qreal size)
 {
-    ui->spinSize->setValue(size*100);
+    ui->spinSize->setValue(size * 100);
+}
+void WatermarkForm::setWatermarkRotation(int angle)
+{
+    ui->spinRotation->setValue(qAbs(angle) % 360);
 }
 void WatermarkForm::setWatermarkAlpha(qreal alpha)
 {
-    ui->spinOpacity->setValue(alpha*100);
+    ui->spinOpacity->setValue(alpha * 100);
 }
-void WatermarkForm::setWatermarkColor(const QColor &color)
+void WatermarkForm::setWatermarkColor(const QColor& color)
 {
     updateColor(color);
     ui->spinColorOpacity->setValue(qRound(color.alphaF() * 100));
@@ -156,7 +165,7 @@ void WatermarkForm::setWatermarkColor(const QColor &color)
 void WatermarkForm::setWatermarkAnchor(WatermarkAnchor anchor)
 {
     ui->comboPosition->setCurrentIndex(static_cast<int>(anchor));
-    switch(anchor) {
+    switch (anchor) {
     case AnchorTopLeft: ui->radioTopLeft->setChecked(true); break;
     case AnchorTop: ui->radioTop->setChecked(true); break;
     case AnchorTopRight: ui->radioTopRight->setChecked(true); break;
@@ -178,10 +187,10 @@ void WatermarkForm::pickColor()
     connect(dialog, &QColorDialog::currentColorChanged, this, &WatermarkForm::updateColor);
     dialog->open();
 }
-void WatermarkForm::updateColor(const QColor &color)
+void WatermarkForm::updateColor(const QColor& color)
 {
     QColor c = color;
-    c.setAlphaF(ui->spinColorOpacity->value()/100.);
+    c.setAlphaF(ui->spinColorOpacity->value() / 100.);
     m_color = c;
     ui->buttonPickColor->setStyleSheet(QString("background: %0").arg(c.name(QColor::HexRgb)));
     emit watermarkColorChanged(c);
@@ -193,26 +202,45 @@ void WatermarkForm::initSignals()
         ui->buttonRemove->setEnabled(ui->listWidget->currentRow() > 0);
         QPixmap image = item->data(kPixmapDataRole).value<QPixmap>();
         emit watermarkImageChanged(image);
-    });
+        });
     connect(ui->listWidget, &QListWidget::itemChanged, [this](QListWidgetItem* item) {
         QString name = item->data(kTextDataRole).toString();
         Watermark before;
         before.name = name;
         before.image = item->data(kPixmapDataRole).value<QPixmap>();
-        if(name != item->text() && !name.isEmpty() && !item->text().isEmpty()) {
+        if (name != item->text() && !name.isEmpty() && !item->text().isEmpty()) {
             Watermark after;
             after.name = item->text();
             after.image = before.image;
             WatermarkManager::replaceWatermark(before, after);
             item->setData(kTextDataRole, item->text());
         }
-    });
+        });
 
     connect(ui->sliderOpacity, &QSlider::valueChanged, ui->spinOpacity, &QSpinBox::setValue);
-    connect(ui->spinOpacity, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderOpacity->setValue(value); emit watermarkAlphaChanged(value/100.); });
+    connect(ui->spinOpacity, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderOpacity->setValue(value); emit watermarkAlphaChanged(value / 100.); });
 
     connect(ui->sliderSize, &QSlider::valueChanged, ui->spinSize, &QSpinBox::setValue);
-    connect(ui->spinSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderSize->setValue(value); emit watermarkSizeChanged(value/100.); });
+    connect(ui->spinSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderSize->setValue(value); emit watermarkSizeChanged(value / 100.); });
+
+    connect(ui->dialRotation, &QDial::valueChanged, [this](int value) {
+        ui->spinRotation->blockSignals(true);
+        qDebug("%d", value);
+        if (value < 270) {
+            ui->spinRotation->setValue(359 - (90 + qAbs(value)));
+        }
+        else {
+            ui->spinRotation->setValue(359 - (value - 270));
+        }
+        ui->spinRotation->blockSignals(false);
+        emit watermarkRotationChanged(359 - ui->spinRotation->value());
+        });
+    connect(ui->spinRotation, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        ui->dialRotation->blockSignals(true);
+        ui->dialRotation->setValue((359 - value) + 270);
+        ui->dialRotation->blockSignals(false);
+        emit watermarkRotationChanged(359 - value);
+        });
 
     connect(ui->sliderColorOpacity, &QSlider::valueChanged, ui->spinColorOpacity, &QSpinBox::setValue);
     connect(ui->spinColorOpacity, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderColorOpacity->setValue(value); updateColor(m_color); });
@@ -221,30 +249,33 @@ void WatermarkForm::initSignals()
     connect(ui->checkOriginalSize, &QCheckBox::toggled, [this](bool v) { emit watermarkResizeToggled(!v); });
     connect(ui->checkOriginalSize, &QCheckBox::toggled, [this](bool v) { ui->sliderSize->setEnabled(!v); ui->spinSize->setEnabled(!v); });
 
+    connect(ui->checkOriginalRotation, &QCheckBox::toggled, [this](bool v) { emit watermarkRotateToggled(!v); });
+    connect(ui->checkOriginalRotation, &QCheckBox::toggled, [this](bool v) { ui->dialRotation->setEnabled(!v); ui->spinRotation->setEnabled(!v); });
+
     connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { emit watermarkColorizeToggled(!v); });
     connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { ui->sliderColorOpacity->setEnabled(!v); ui->spinColorOpacity->setEnabled(!v); ui->buttonPickColor->setEnabled(!v); });
-    connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { if(!v) updateColor(m_color); });
+    connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { if (!v) updateColor(m_color); });
 
     connect(ui->buttonAdd, &QPushButton::clicked, this, QOverload<>::of(&WatermarkForm::addWatermark));
     connect(ui->buttonRemove, &QPushButton::clicked, this, &WatermarkForm::removeWatermark);
 
     connect(ui->comboPosition, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int i) { emit watermarkPositionChanged(static_cast<WatermarkAnchor>(i)); });
-    connect(ui->radioTopLeft, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorTopLeft); });
-    connect(ui->radioTop, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorTop); });
-    connect(ui->radioTopRight, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorTopRight); });
-    connect(ui->radioLeft, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorLeft); });
-    connect(ui->radioCenter, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorCenter); });
-    connect(ui->radioRight, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorRight); });
-    connect(ui->radioBottomLeft, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorBottomLeft); });
-    connect(ui->radioBottom, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorBottom); });
-    connect(ui->radioBottomRight, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorBottomRight); });
-    connect(ui->radioRepeated, &QRadioButton::toggled, [this](bool c) { if(c) emit watermarkPositionChanged(AnchorRepeated); });
+    connect(ui->radioTopLeft, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorTopLeft); });
+    connect(ui->radioTop, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorTop); });
+    connect(ui->radioTopRight, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorTopRight); });
+    connect(ui->radioLeft, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorLeft); });
+    connect(ui->radioCenter, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorCenter); });
+    connect(ui->radioRight, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorRight); });
+    connect(ui->radioBottomLeft, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorBottomLeft); });
+    connect(ui->radioBottom, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorBottom); });
+    connect(ui->radioBottomRight, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorBottomRight); });
+    connect(ui->radioRepeated, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorRepeated); });
     connect(this, &WatermarkForm::watermarkPositionChanged, [this](WatermarkAnchor anchor) { setWatermarkAnchor(anchor); });
 }
 void WatermarkForm::loadWatermarks()
 {
     WatermarkList watermarks = WatermarkManager::getWatermarks();
-    for(auto watermark : watermarks) {
+    for (auto watermark : watermarks) {
         addWatermark(watermark);
     }
 }

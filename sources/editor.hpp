@@ -65,8 +65,10 @@ public slots:
     void setWatermarkAnchor(WatermarkAnchor anchor);
     void setWatermarkAlpha(qreal alpha);
     void setWatermarkSize(qreal size);
+    void setWatermarkRotation(int angle);
     void setWatermarkColor(const QColor& color);
     void setWatermarkResize(bool resize);
+    void setWatermarkRotate(bool rotate);
     void setWatermarkColorize(bool colorize);
 
     void zoom(qreal factor);
@@ -161,6 +163,8 @@ private:
     bool m_resize;
     qreal m_alpha;
     qreal m_size;
+    bool m_rotate;
+    int m_rotation;
     WatermarkAnchor m_anchor;
     QPoint m_pos;
     QPixmap m_watermark;
