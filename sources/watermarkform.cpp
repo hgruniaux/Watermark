@@ -124,6 +124,10 @@ qreal WatermarkForm::watermarkSize() const
 {
     return ui->spinSize->value() / 100.f;
 }
+qreal WatermarkForm::watermarkMargin() const
+{
+    return ui->spinMargin->value() / 100.f;
+}
 int WatermarkForm::watermarkRotation() const
 {
     return ui->spinRotation->value();
@@ -148,6 +152,10 @@ void WatermarkForm::setWatermarkIndex(int index)
 void WatermarkForm::setWatermarkSize(qreal size)
 {
     ui->spinSize->setValue(size * 100);
+}
+void WatermarkForm::setWatermarkMargin(qreal margin)
+{
+    ui->spinMargin->setValue(margin * 100);
 }
 void WatermarkForm::setWatermarkRotation(int angle)
 {
@@ -222,6 +230,9 @@ void WatermarkForm::initSignals()
 
     connect(ui->sliderSize, &QSlider::valueChanged, ui->spinSize, &QSpinBox::setValue);
     connect(ui->spinSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderSize->setValue(value); emit watermarkSizeChanged(value / 100.); });
+
+    connect(ui->sliderMargin, &QSlider::valueChanged, ui->spinMargin, &QSpinBox::setValue);
+    connect(ui->spinMargin, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderMargin->setValue(value); emit watermarkMarginChanged(value / 100.); });
 
     connect(ui->dialRotation, &QDial::valueChanged, [this](int value) {
         ui->spinRotation->blockSignals(true);

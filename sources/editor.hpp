@@ -65,6 +65,7 @@ public slots:
     void setWatermarkAnchor(WatermarkAnchor anchor);
     void setWatermarkAlpha(qreal alpha);
     void setWatermarkSize(qreal size);
+    void setWatermarkMargin(qreal margin);
     void setWatermarkRotation(int angle);
     void setWatermarkColor(const QColor& color);
     void setWatermarkResize(bool resize);
@@ -158,11 +159,14 @@ protected:
 private:
     friend class Editor;
 
+    QMargins margins(const QSize& watermarkSize) const;
+
 private:
     QRect m_crop;
     bool m_resize;
     qreal m_alpha;
     qreal m_size;
+    qreal m_margin;
     bool m_rotate;
     int m_rotation;
     WatermarkAnchor m_anchor;

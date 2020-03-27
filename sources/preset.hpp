@@ -42,6 +42,7 @@ public:
         bool originalSize;
         quint8 anchor;
         quint8 size;
+        quint8 margin;
         quint16 rotation;
         quint8 alpha;
         quint16 index;
