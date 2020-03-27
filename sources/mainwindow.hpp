@@ -35,8 +35,6 @@ namespace Ui {
     class MainWindow;
 }
 
-class IconnedDockStyle;
-
 // ========================================================
 // class MainWindow
 // ========================================================
@@ -81,7 +79,6 @@ private:
 private:
     Ui::MainWindow* ui;
     QRubberBand* m_rubberBand;
-    IconnedDockStyle* m_style;
     QPixmap m_image;
     QString m_path;
     QSlider* m_zoomSlider;

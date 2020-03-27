@@ -43,34 +43,12 @@
 #include "ui_mainwindow.h"
 
 // ========================================================
-// class IconnedDockStyle
-// ========================================================
-
-class IconnedDockStyle : public QProxyStyle {
-public:
-    void drawControl(ControlElement element, const QStyleOption* option,
-        QPainter* painter, const QWidget* widget = 0) const override
-    {
-        if (element == QStyle::CE_DockWidgetTitle) {
-            int width = pixelMetric(QStyle::PM_ToolBarIconSize);
-            int margin = baseStyle()->pixelMetric(QStyle::PM_DockWidgetTitleMargin);
-            QPoint iconPoint(margin + option->rect.left(), margin + option->rect.center().y() - width / 2);
-
-            painter->drawPixmap(iconPoint, widget->windowIcon().pixmap(width, width));
-            const_cast<QStyleOption*>(option)->rect = option->rect.adjusted(width, 0, 0, 0);
-        }
-        baseStyle()->drawControl(element, option, painter, widget);
-    }
-}; // class IconnedDockStyle
-
-// ========================================================
 // class MainWindow
 // ========================================================
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    m_style(new IconnedDockStyle)
+    ui(new Ui::MainWindow)
 {
     PresetManager::makeDirectory();
     WatermarkManager::makeDirectory();
@@ -91,14 +69,11 @@ MainWindow::MainWindow(QWidget* parent) :
     ui->preview->setEditor(ui->editor);
     ui->menuSavedPreset->removeAction(ui->action_4);
 
-    ui->dockWidgetCrop->setStyle(m_style);
-    ui->dockWidgetPreview->setStyle(m_style);
-    ui->dockWidgetWatermark->setStyle(m_style);
+    ui->dockWidgetPreview->hide();
 }
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete m_style;
 }
 
 QPixmap MainWindow::image() const
