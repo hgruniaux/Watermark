@@ -166,9 +166,8 @@ WatermarkList WatermarkManager::watermarks()
         Watermark watermark;
         QString error;
         if (!watermark.load(file.absoluteFilePath(), &error)) {
-            qWarning() << "Warning: Invalid preset file" << file
+            qWarning() << "Error: Invalid watermark file" << file
                 << ", " << error;
-            watermarks.append(watermark);
         }
         else {
             watermarks.append(watermark);
