@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setApplicationDisplayName("Watermark");
     a.setApplicationName("watermark");
-    a.setApplicationVersion("1.0.0");
+    a.setApplicationVersion("1.1.0");
 
     QTranslator translator;
     if (translator.load(QLocale(), QLatin1String(), QLatin1String(), QLatin1String("./languages/"), QLatin1String(".qm"))) {
