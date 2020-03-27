@@ -34,7 +34,12 @@ int main(int argc, char *argv[])
     a.setApplicationVersion("1.1.0");
 
     QTranslator translator;
-    if (translator.load(QLocale(), QLatin1String(), QLatin1String(), QLatin1String("./languages/"), QLatin1String(".qm"))) {
+
+    if (translator.load(QLocale(), QLatin1String("qt"), QLatin1String("_"), QLatin1String("./translations/"), QLatin1String(".qm"))) {
+        a.installTranslator(&translator);
+    }
+
+    if (translator.load(QLocale(), QLatin1String("wm"), QLatin1String("_"), QLatin1String("./translations/"), QLatin1String(".qm"))) {
         a.installTranslator(&translator);
     }
 

@@ -23,5 +23,5 @@ set(SOURCES
 	"watermark.cpp"
 	"watermarkform.cpp")
 
-add_executable(${PROJECT_NAME} ${RESSOURCES} ${HEADERS} ${SOURCES})
+add_executable(${PROJECT_NAME} ${RESSOURCES} ${TRANSLATIONS} ${HEADERS} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets)

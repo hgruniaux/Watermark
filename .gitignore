@@ -2,3 +2,4 @@ build/
 .vs/
 .vscode/
 CMakeSettings.json
+*.qm
