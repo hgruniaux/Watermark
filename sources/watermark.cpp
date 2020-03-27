@@ -29,18 +29,20 @@
 #include <QDebug>
 #include <QFile>
 #include <QDir>
+
 #include "watermark.hpp"
 
 // ========================================================
 // class Watermark
 // ========================================================
 
-bool Watermark::save(const QString &path, QString* error) const
+bool Watermark::save(const QString& path, QString* error) const
 {
     QFile file(path);
     QDataStream stream(&file);
-    if(!file.open(QFile::WriteOnly)) {
-        if(error) *error = QString("Could not open file");
+    if (!file.open(QFile::WriteOnly)) {
+        if (error)
+            *error = QString("Could not open file");
         return false;
     }
 
@@ -52,15 +54,23 @@ bool Watermark::save(const QString &path, QString* error) const
     stream << name;
     stream << image;
 
-    if(error) *error = QString();
+    if (stream.status() != QDataStream::Ok) {
+        if (error)
+            *error = QString("Internal error");
+        return false;
+    }
+
+    if (error)
+        *error = QString();
     return true;
 }
-bool Watermark::load(const QString &path, QString* error)
+bool Watermark::load(const QString& path, QString* error)
 {
     QFile file(path);
     QDataStream stream(&file);
-    if(!file.open(QFile::ReadOnly)) {
-        if(error) *error = QString("Could not open file");
+    if (!file.open(QFile::ReadOnly)) {
+        if (error)
+            *error = QString("Could not open file");
         return false;
     }
 
@@ -69,13 +79,15 @@ bool Watermark::load(const QString &path, QString* error)
     quint8 version;
     quint8 qtVersion;
     stream >> magicNumber;
-    if(magicNumber != WatermarkManager::getMagicNumber()) {
-        if(error) *error = QString("Invalid magic number");
+    if (magicNumber != WatermarkManager::getMagicNumber()) {
+        if (error)
+            *error = QString("Invalid magic number");
         return false;
     }
     stream >> version;
-    if(version > WatermarkManager::getVersion()) {
-        if(error) *error = QString("Unsupported version");
+    if (version > WatermarkManager::getVersion()) {
+        if (error)
+            *error = QString("Unsupported version");
         return false;
     }
     stream >> qtVersion;
@@ -85,7 +97,14 @@ bool Watermark::load(const QString &path, QString* error)
     stream >> name;
     stream >> image;
 
-    if(error) *error = QString();
+    if (stream.status() != QDataStream::Ok) {
+        if (error)
+            *error = QString("Ill-formed watermark file");
+        return false;
+    }
+
+    if (error)
+        *error = QString();
     return true;
 }
 
@@ -95,47 +114,63 @@ bool Watermark::load(const QString &path, QString* error)
 
 void WatermarkManager::makeDirectory()
 {
-    QDir dir(getDirectory());
-    if(!dir.exists()) {
+    QDir dir;
+    if (!dir.exists()) {
         dir.mkpath(".");
     }
 }
 
-QString WatermarkManager::getDirectory()
+QString WatermarkManager::directoryPath()
 {
     QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    return dataDir + "/watermarks/";
+    return dataDir + "/watermarks";
 }
-QString WatermarkManager::getFileExtension()
+QDir WatermarkManager::directory()
 {
-    return QString(".watermark");
+    return QDir(directoryPath());
 }
-QString WatermarkManager::getFile(const QString& name)
+QString WatermarkManager::legacyDirectoryPath()
 {
-    return getDirectory() + QDir::separator() + name + getFileExtension();
+    QString appDir = QApplication::applicationDirPath();
+    return appDir + "/watermarks";
+}
+QDir WatermarkManager::legacyDirectory()
+{
+    return QDir(legacyDirectoryPath());
+}
+QString WatermarkManager::filePath(const QString& name)
+{
+    return directory().filePath(name + ".watermark");
 }
 
-QFileInfoList WatermarkManager::getWatermarkFiles()
+QFileInfoList WatermarkManager::watermarkFiles()
 {
-    QString directoryPath(getDirectory());
-    QDir directory(directoryPath);
-    QFileInfoList files = directory.entryInfoList({"*" + getFileExtension()},
-                                            QDir::Files | QDir::NoSymLinks);
+    QFileInfoList files;
+
+    // Find watermark files
+    files << directory().entryInfoList({ "*.watermark" },
+        QDir::Files | QDir::NoSymLinks);
+
+    // Find legacy watermark files
+    files << legacyDirectory().entryInfoList({ "*.watermark" },
+        QDir::Files | QDir::NoSymLinks);
+
     return files;
 }
-WatermarkList WatermarkManager::getWatermarks()
+WatermarkList WatermarkManager::watermarks()
 {
-    QFileInfoList files = getWatermarkFiles();
-    WatermarkList watermarks; 
+    QFileInfoList files = watermarkFiles();
+    WatermarkList watermarks;
     watermarks.reserve(files.size());
-    for(auto file : files) {
+    for (auto file : files) {
         Watermark watermark;
         QString error;
-        if(!watermark.load(file.absoluteFilePath(), &error)) {
+        if (!watermark.load(file.absoluteFilePath(), &error)) {
             qWarning() << "Warning: Invalid preset file" << file
-                       << ", " << error;
+                << ", " << error;
             watermarks.append(watermark);
-        } else {
+        }
+        else {
             watermarks.append(watermark);
         }
     }
@@ -144,37 +179,43 @@ WatermarkList WatermarkManager::getWatermarks()
 
 bool WatermarkManager::addWatermark(const Watermark& watermark, QString* error)
 {
-    QString file = getFile(watermark.name);
+    QString file = filePath(watermark.name);
     return watermark.save(file, error);
 }
 bool WatermarkManager::removeWatermark(const Watermark& watermark, QString* error)
 {
-    QString file = getFile(watermark.name);
-    if(QFile::exists(file)) {
+    QString file = filePath(watermark.name);
+    if (QFile::exists(file)) {
         bool result = QFile::remove(file);
-        if(!result) {
-            if(error) *error = QString("Failed to remove watermark file");
+        if (!result) {
+            if (error)
+                *error = QString("Failed to remove watermark file");
             return false;
-        } else {
-            if(error) *error = QString();
+        }
+        else {
+            if (error)
+                *error = QString();
             return true;
         }
-    } else {
-        if(error) *error = QString("Watermark doesn't exists");
+    }
+    else {
+        if (error)
+            *error = QString("Watermark doesn't exists");
         return false;
     }
 }
 bool WatermarkManager::replaceWatermark(const Watermark& before, const Watermark& after, QString* error)
 {
-    if(!removeWatermark(before, error)) return false;
-    if(!addWatermark(after, error)) return false;
+    if (!removeWatermark(before, error))
+        return false;
+    if (!addWatermark(after, error))
+        return false;
     return true;
 }
 
-Watermark WatermarkManager::getDefaultWatermark()
+Watermark WatermarkManager::defaultWatermark()
 {
-    Watermark watermark;
-    return watermark;
+    return Watermark();
 }
 
 quint32 WatermarkManager::getMagicNumber()

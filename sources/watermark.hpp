@@ -70,18 +70,20 @@ class WatermarkManager {
 public:
     static void makeDirectory();
 
-    static QString getDirectory();
-    static QString getFileExtension();
-    static QString getFile(const QString& name);
+    static QString directoryPath();
+    static QDir directory();
+    static QString legacyDirectoryPath();
+    static QDir legacyDirectory();
+    static QString filePath(const QString& name);
 
-    static QFileInfoList getWatermarkFiles();
-    static WatermarkList getWatermarks();
+    static QFileInfoList watermarkFiles();
+    static WatermarkList watermarks();
 
     static bool addWatermark(const Watermark& watermark, QString* error = nullptr);
     static bool removeWatermark(const Watermark& watermark, QString* error = nullptr);
     static bool replaceWatermark(const Watermark& before, const Watermark& after, QString* error = nullptr);
 
-    static Watermark getDefaultWatermark();
+    static Watermark defaultWatermark();
 
     static quint32 getMagicNumber();
     static quint8 getVersion();

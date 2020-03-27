@@ -274,7 +274,7 @@ void WatermarkForm::initSignals()
 }
 void WatermarkForm::loadWatermarks()
 {
-    WatermarkList watermarks = WatermarkManager::getWatermarks();
+    WatermarkList watermarks = WatermarkManager::watermarks();
     for (auto watermark : watermarks) {
         addWatermark(watermark);
     }
