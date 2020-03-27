@@ -155,28 +155,28 @@ void WatermarkForm::setWatermarkOriginalColor(bool original)
 }
 void WatermarkForm::setWatermarkIndex(int index)
 {
-    ui->listWidget->setCurrentRow(index);
+    ui->listWidget->setCurrentRow(qBound(0, index, ui->listWidget->count() - 1));
 }
 void WatermarkForm::setWatermarkSize(qreal size)
 {
-    ui->spinSize->setValue(size * 100);
+    ui->spinSize->setValue(qBound(0, qRound(size * 100), 100));
 }
 void WatermarkForm::setWatermarkMargin(qreal margin)
 {
-    ui->spinMargin->setValue(margin * 100);
+    ui->spinMargin->setValue(qBound(0, qRound(margin * 100), 100));
 }
 void WatermarkForm::setWatermarkRotation(int angle)
 {
-    ui->spinRotation->setValue(qAbs(angle) % 360);
+    ui->spinRotation->setValue(qBound(0, qAbs(angle) % 360, 360));
 }
 void WatermarkForm::setWatermarkAlpha(qreal alpha)
 {
-    ui->spinOpacity->setValue(alpha * 100);
+    ui->spinOpacity->setValue(qBound(0, qRound(alpha * 100), 100));
 }
 void WatermarkForm::setWatermarkColor(const QColor& color)
 {
     updateColor(color);
-    ui->spinColorOpacity->setValue(qRound(color.alphaF() * 100));
+    ui->spinColorOpacity->setValue(qBound(0, qRound(color.alphaF() * 100), 100));
 }
 void WatermarkForm::setWatermarkAnchor(WatermarkAnchor anchor)
 {

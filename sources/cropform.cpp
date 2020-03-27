@@ -64,10 +64,10 @@ void CropForm::setImageRect(const QRect& rect)
 void CropForm::setCropRect(const QRect& crop)
 {
     m_crop = crop;
-    ui->xEdit->setValue(crop.x());
     ui->xEdit->setMaximum(m_image.width() - crop.width());
-    ui->yEdit->setValue(crop.y());
+    ui->xEdit->setValue(crop.x());
     ui->yEdit->setMaximum(m_image.height() - crop.height());
+    ui->yEdit->setValue(crop.y());
     ui->widthEdit->setValue(crop.width());
     ui->heightEdit->setValue(crop.height());
 }
