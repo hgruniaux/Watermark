@@ -114,7 +114,7 @@ bool Watermark::load(const QString& path, QString* error)
 
 void WatermarkManager::makeDirectory()
 {
-    QDir dir;
+    QDir dir = directory();
     if (!dir.exists()) {
         dir.mkpath(".");
     }
