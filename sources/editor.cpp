@@ -99,9 +99,11 @@ QSize Editor::mapFrom(const QSize& size) const
 void Editor::setImage(const QPixmap& image)
 {
     m_image = image;
+    m_watermarkPreview->m_crop = QRect(QPoint(0, 0), image.size());
     m_watermarkPreview->resize(image.size());
     m_watermarkPreview->setVisible(!image.isNull());
     m_watermarkPreview->update();
+    m_croppingPreview->m_crop = QRect(QPoint(0, 0), image.size());
     m_croppingPreview->resize(image.size());
     m_croppingPreview->setVisible(!image.isNull());
     m_croppingPreview->update();
