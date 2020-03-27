@@ -112,6 +112,10 @@ bool WatermarkForm::watermarkOriginalSize() const
 {
     return ui->checkOriginalSize->isChecked();
 }
+bool WatermarkForm::watermarkOriginalColor() const
+{
+    return ui->checkOriginalColor->isChecked();
+}
 int WatermarkForm::watermarkIndex() const
 {
     return ui->listWidget->currentRow();
@@ -144,6 +148,10 @@ QColor WatermarkForm::watermarkColor() const
 void WatermarkForm::setWatermarkOriginalSize(bool original)
 {
     ui->checkOriginalSize->setChecked(original);
+}
+void WatermarkForm::setWatermarkOriginalColor(bool original)
+{
+    ui->checkOriginalColor->setChecked(original);
 }
 void WatermarkForm::setWatermarkIndex(int index)
 {

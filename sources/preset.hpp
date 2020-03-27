@@ -40,6 +40,7 @@ public:
     QString name;
     struct {
         bool originalSize;
+        bool originalColor;
         quint8 anchor;
         quint8 size;
         quint8 margin;
@@ -68,18 +69,18 @@ class PresetManager {
 public:
     static void makeDirectory();
 
-    static QString getDirectory();
-    static QString getFileExtension();
-    static QString getFile(const QString& name);
+    static QString directoryPath();
+    static QDir directory();
+    static QString filePath(const QString& name);
 
-    static QStringList getPresetFiles();
-    static PresetList getPresets();
+    static QFileInfoList presetFiles();
+    static PresetList presets();
 
     static bool addPreset(const Preset& preset, QString* error = nullptr);
     static bool removePreset(const Preset& preset, QString* error = nullptr);
     static bool replacePreset(const Preset& before, const Preset& after, QString* error = nullptr);
 
-    static Preset getDefaultPreset();
+    static Preset defaultPreset();
 
     static quint32 getMagicNumber();
     static quint8 getVersion();

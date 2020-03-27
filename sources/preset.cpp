@@ -24,6 +24,7 @@
 
 #include <QDataStream>
 #include <QApplication>
+#include <QStandardPaths>
 #include <QSettings>
 #include <QDebug>
 #include <QFile>
@@ -34,12 +35,13 @@
 // class Preset
 // ========================================================
 
-bool Preset::save(const QString &path, QString* error) const
+bool Preset::save(const QString& path, QString* error) const
 {
     QFile file(path);
     QDataStream stream(&file);
-    if(!file.open(QFile::WriteOnly)) {
-        if(error) *error = QString("Could not open file");
+    if (!file.open(QFile::WriteOnly)) {
+        if (error)
+            *error = QString("Could not open file");
         return false;
     }
 
@@ -50,6 +52,7 @@ bool Preset::save(const QString &path, QString* error) const
     // --- Body ---
     stream << name;
     stream << watermark.originalSize;
+    stream << watermark.originalColor;
     stream << watermark.anchor;
     stream << watermark.size;
     stream << watermark.margin;
@@ -60,15 +63,23 @@ bool Preset::save(const QString &path, QString* error) const
     stream << crop.rect;
     stream << crop.fixed;
 
-    if(error) *error = QString();
+    if (stream.status() != QDataStream::Ok) {
+        if (error)
+            *error = "Internal error";
+        return false;
+    }
+
+    if (error)
+        *error = QString();
     return true;
 }
-bool Preset::load(const QString &path, QString* error)
+bool Preset::load(const QString& path, QString* error)
 {
     QFile file(path);
     QDataStream stream(&file);
-    if(!file.open(QFile::ReadOnly)) {
-        if(error) *error = QString("Could not open file");
+    if (!file.open(QFile::ReadOnly)) {
+        if (error)
+            *error = QString("Could not open file");
         return false;
     }
 
@@ -77,23 +88,23 @@ bool Preset::load(const QString &path, QString* error)
     quint8 version;
     quint8 qtVersion;
     stream >> magicNumber;
-    if(magicNumber != PresetManager::getMagicNumber()) {
-        if(error) *error = QString("Invalid magic number");
+    if (magicNumber != PresetManager::getMagicNumber()) {
+        if (error)
+            *error = QString("Invalid magic number");
         return false;
     }
     stream >> version;
-    if(version > PresetManager::getVersion()) {
-        if(error) *error = QString("Unsupported version");
+    if (version > PresetManager::getVersion()) {
+        if (error)
+            *error = QString("Unsupported version");
         return false;
     }
     stream >> qtVersion;
-    if(qtVersion > QDataStream::Qt_5_12) {
-        if(error) *error = QString("Unsupported Qt version");
-        return false;
-    }
+    stream.setVersion(qtVersion);
     // --- Body ---
     stream >> name;
     stream >> watermark.originalSize;
+    stream >> watermark.originalColor;
     stream >> watermark.anchor;
     stream >> watermark.size;
     stream >> watermark.margin;
@@ -104,7 +115,14 @@ bool Preset::load(const QString &path, QString* error)
     stream >> crop.rect;
     stream >> crop.fixed;
 
-    if(error) *error = QString();
+    if (stream.status() != QDataStream::Ok) {
+        if (error)
+            *error = "Ill-formed preset file";
+        return false;
+    }
+
+    if (error)
+        *error = QString();
     return true;
 }
 
@@ -114,52 +132,45 @@ bool Preset::load(const QString &path, QString* error)
 
 void PresetManager::makeDirectory()
 {
-    QDir dir(getDirectory());
-    if(!dir.exists()) {
+    QDir dir = directory();
+    if (!dir.exists()) {
         dir.mkpath(".");
     }
 }
 
-QString PresetManager::getDirectory()
+QString PresetManager::directoryPath()
 {
-    QString appDir = QApplication::applicationDirPath();
-    QString settingsFile = appDir + QDir::separator() + "settings.ini";
-    QString defaultDir = appDir + QDir::separator() + "presets";
-    QSettings settings(settingsFile, QSettings::IniFormat);
-    return settings.value("presets_directory", defaultDir).toString();
+    QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    return dataDir + "/presets";
 }
-QString PresetManager::getFileExtension()
+QDir PresetManager::directory()
 {
-    return QString(".preset");
+    return QDir(directoryPath());
 }
-QString PresetManager::getFile(const QString& name)
+QString PresetManager::filePath(const QString& name)
 {
-    return getDirectory() + QDir::separator() + name + getFileExtension();
+    return directory().filePath(name + ".preset");
 }
 
-QStringList PresetManager::getPresetFiles()
+QFileInfoList PresetManager::presetFiles()
 {
-    QString directoryPath(getDirectory());
-    QDir directory(directoryPath);
-    QStringList files = directory.entryList({"*" + getFileExtension()},
-                                            QDir::Files | QDir::NoSymLinks);
-    for(auto& file : files) {
-        file.prepend(directoryPath + QDir::separator());
-    }
+    QFileInfoList files = directory().entryInfoList({ "*.preset" },
+        QDir::Files | QDir::NoSymLinks);
     return files;
 }
-PresetList PresetManager::getPresets()
+PresetList PresetManager::presets()
 {
-    QStringList files = getPresetFiles();
-    PresetList presets; presets.reserve(files.size());
-    for(auto file : files) {
+    QFileInfoList files = presetFiles();
+    PresetList presets;
+    presets.reserve(files.size());
+    for (auto file : files) {
         Preset preset;
         QString error;
-        if(!preset.load(file, &error)) {
-            qWarning() << "Warning: Invalid preset file" << file
-                       << ", " << error;
-            presets.append(preset);
-        } else {
+        if (!preset.load(file.absoluteFilePath(), &error)) {
+            qWarning() << "Error: Invalid preset file" << file
+                << ", " << error;
+        }
+        else {
             presets.append(preset);
         }
     }
@@ -168,37 +179,40 @@ PresetList PresetManager::getPresets()
 
 bool PresetManager::addPreset(const Preset& preset, QString* error)
 {
-    QString file = getFile(preset.name);
+    QString file = filePath(preset.name);
     return preset.save(file, error);
 }
 bool PresetManager::removePreset(const Preset& preset, QString* error)
 {
-    QString file = getFile(preset.name);
-    if(QFile::exists(file)) {
+    QString file = filePath(preset.name);
+    if (QFile::exists(file)) {
         bool result = QFile::remove(file);
-        if(!result) {
-            if(error) *error = QString("Failed to remove preset file");
+        if (!result) {
+            if (error) *error = QString("Failed to remove preset file");
             return false;
-        } else {
-            if(error) *error = QString();
+        }
+        else {
+            if (error) *error = QString();
             return true;
         }
-    } else {
-        if(error) *error = QString("Preset doesn't exists");
+    }
+    else {
+        if (error) *error = QString("Preset doesn't exists");
         return false;
     }
 }
 bool PresetManager::replacePreset(const Preset& before, const Preset& after, QString* error)
 {
-    if(!removePreset(before, error)) return false;
-    if(!addPreset(after, error)) return false;
+    if (!removePreset(before, error))
+        return false;
+    if (!addPreset(after, error))
+        return false;
     return true;
 }
 
-Preset PresetManager::getDefaultPreset()
+Preset PresetManager::defaultPreset()
 {
-    Preset preset;
-    return preset;
+    return Preset();
 }
 
 quint32 PresetManager::getMagicNumber()

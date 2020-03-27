@@ -46,6 +46,7 @@ public:
 
     QString watermarkName() const;
     bool watermarkOriginalSize() const;
+    bool watermarkOriginalColor() const;
     int watermarkIndex() const;
     WatermarkAnchor watermarkAnchor() const;
     qreal watermarkSize() const;
@@ -60,6 +61,7 @@ public slots:
     void removeWatermark();
 
     void setWatermarkOriginalSize(bool original);
+    void setWatermarkOriginalColor(bool original);
     void setWatermarkIndex(int index);
     void setWatermarkAnchor(WatermarkAnchor anchor);
     void setWatermarkSize(qreal size);

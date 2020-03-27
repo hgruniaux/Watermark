@@ -118,6 +118,7 @@ Preset MainWindow::preset(const QString& name) const
     Preset preset;
     preset.name = name;
     preset.watermark.originalSize = ui->watermarkForm->watermarkOriginalSize();
+    preset.watermark.originalColor = ui->watermarkForm->watermarkOriginalColor();
     preset.watermark.anchor = ui->watermarkForm->watermarkAnchor();
     preset.watermark.index = ui->watermarkForm->watermarkIndex();
     preset.watermark.rotation = ui->watermarkForm->watermarkRotation();
@@ -132,6 +133,7 @@ Preset MainWindow::preset(const QString& name) const
 void MainWindow::setPreset(const Preset& preset)
 {
     ui->watermarkForm->setWatermarkOriginalSize(preset.watermark.originalSize);
+    ui->watermarkForm->setWatermarkOriginalColor(preset.watermark.originalColor);
     ui->watermarkForm->setWatermarkAlpha(preset.watermark.alpha / 100.);
     ui->watermarkForm->setWatermarkSize(preset.watermark.size / 100.);
     ui->watermarkForm->setWatermarkMargin(preset.watermark.margin / 100.);
@@ -198,7 +200,7 @@ void MainWindow::saveImageAs()
 
 void MainWindow::loadPresets()
 {
-    PresetList presets = PresetManager::getPresets();
+    PresetList presets = PresetManager::presets();
     for (auto preset : presets) {
         addPreset(preset);
     }
