@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>328</width>
-    <height>207</height>
+    <height>216</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,16 +57,6 @@
      <property name="text">
       <string>Copyright © 2019 Hubert Gruniaux
 Licensed under the MIT license</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_7">
-     <property name="text">
-      <string>Created for Domitille Lequette (&lt;a href=&quot;https://lequette.com/&quot;&gt;https://lequette.com/&lt;/a&gt;)</string>
-     </property>
-     <property name="textFormat">
-      <enum>Qt::RichText</enum>
      </property>
     </widget>
    </item>
