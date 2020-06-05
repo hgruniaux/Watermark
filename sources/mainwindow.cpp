@@ -89,6 +89,10 @@ QPixmap MainWindow::finalImage() const
 }
 void MainWindow::setImage(const QPixmap& image)
 {
+    ui->actionSave->setEnabled(!image.isNull());
+    ui->actionSaveFinish->setEnabled(!image.isNull());
+    ui->actionSaveAs->setEnabled(!image.isNull());
+
     m_image = image;
     ui->editor->setImage(image);
     ui->cropForm->setImageRect(image.rect());
@@ -314,6 +318,12 @@ void MainWindow::initActions()
     ui->actionSaveAs->setShortcut(QKeySequence::SaveAs);
     ui->actionSettings->setShortcut(QKeySequence::Preferences);
     ui->actionExit->setShortcut(QKeySequence::Quit);
+
+    // At start no image is loaded, therefore we can not save "nothing",
+    // so save actions are disabled until an image is loaded.
+    ui->actionSave->setEnabled(false);
+    ui->actionSaveFinish->setEnabled(false);
+    ui->actionSaveAs->setEnabled(false);
 
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openImage);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveImage);
