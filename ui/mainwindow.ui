@@ -200,6 +200,9 @@
    <property name="toolTip">
     <string>Open settings</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
+   </property>
   </action>
   <action name="actionDocumentation">
    <property name="icon">
@@ -225,6 +228,9 @@
    </property>
    <property name="toolTip">
     <string>About WaterMark</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutRole</enum>
    </property>
   </action>
   <action name="actionReportIssue">
@@ -283,6 +289,9 @@
    </property>
    <property name="text">
     <string>About Qt</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::AboutQtRole</enum>
    </property>
   </action>
  </widget>

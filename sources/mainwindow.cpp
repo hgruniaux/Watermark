@@ -333,6 +333,10 @@ void MainWindow::initActions()
     connect(ui->actionAbout, &QAction::triggered, [this]() { auto dialog = new AboutDialog(this); dialog->open(); });
     connect(ui->actionReportIssue, &QAction::triggered, [this]() { auto dialog = new ReportIssueDialog(this); dialog->open(); });
     connect(ui->actionExit, &QAction::triggered, []() { qApp->exit(); });
+
+    connect(ui->actionAboutQt, &QAction::triggered, [this]() {
+        QApplication::aboutQt();
+    });
 }
 void MainWindow::initSignals()
 {
