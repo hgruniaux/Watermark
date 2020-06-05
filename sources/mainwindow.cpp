@@ -36,10 +36,9 @@
 
 #include <QDebug>
 
-#include "aboutdialog.hpp"
-#include "licensedialog.hpp"
 #include "mainwindow.hpp"
 #include "reportissuedialog.hpp"
+#include "ui_aboutdialog.h"
 #include "ui_mainwindow.h"
 
 // ========================================================
@@ -330,9 +329,27 @@ void MainWindow::initActions()
     connect(ui->actionSaveFinish, &QAction::triggered, this, &MainWindow::saveImageFinish);
     connect(ui->actionSaveAs, &QAction::triggered, this, &MainWindow::saveImageAs);
     connect(ui->actionSavePreset, &QAction::triggered, this, QOverload<>::of(&MainWindow::savePreset));
-    connect(ui->actionAbout, &QAction::triggered, [this]() { auto dialog = new AboutDialog(this); dialog->open(); });
     connect(ui->actionReportIssue, &QAction::triggered, [this]() { auto dialog = new ReportIssueDialog(this); dialog->open(); });
     connect(ui->actionExit, &QAction::triggered, []() { qApp->exit(); });
+
+    connect(ui->actionAbout, &QAction::triggered, [this]() {
+        QDialog dialog(this);
+        Ui::AboutDialog ui;
+        ui.setupUi(&dialog);
+
+#ifdef Q_OS_UNIX
+        // On platforms using X11 (unixes platforms), we do not use icons8.com
+        // icons, but instead the native provided icons. Thus we do not need
+        // and we should not add disclaimer for icons8.com.
+        ui.icons8Label->hide();
+#endif // Q_OS_UNIX
+
+        ui.labelVersion->setText(QApplication::applicationVersion());
+        ui.labelOS->setText(QSysInfo::prettyProductName());
+        ui.labelQt->setText(qVersion());
+
+        dialog.exec();
+    });
 
     connect(ui->actionAboutQt, &QAction::triggered, [this]() {
         QApplication::aboutQt();

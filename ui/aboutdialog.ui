@@ -61,9 +61,9 @@ Licensed under the MIT license</string>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_9">
+    <widget class="QLabel" name="icons8Label">
      <property name="text">
-      <string>All icons are provided by icons8 (&lt;a href=&quot;https://icons8.com/&quot;&gt;https://icons8.com/&lt;/a&gt;)</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Icons provided by icons8 (&lt;a href=&quot;https://icons8.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#009dff;&quot;&gt;https://icons8.com/&lt;/span&gt;&lt;/a&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>

@@ -1,8 +1,6 @@
 set(HEADERS
-	"aboutdialog.hpp"
 	"cropform.hpp"
 	"editor.hpp"
-	"licensedialog.hpp"
 	"mainwindow.hpp"
 	"preset.hpp"
 	"preview.hpp"
@@ -11,10 +9,8 @@ set(HEADERS
 	"watermarkform.hpp")
 
 set(SOURCES
-	"aboutdialog.cpp"
 	"cropform.cpp"
 	"editor.cpp"
-	"licensedialog.cpp"
 	"main.cpp"
 	"mainwindow.cpp"
 	"preset.cpp"
