@@ -55,7 +55,7 @@
    <item>
     <widget class="QLabel" name="label_6">
      <property name="text">
-      <string>Copyright © 2019 Hubert Gruniaux
+      <string>Copyright © 2020 Hubert Gruniaux
 Licensed under the MIT license</string>
      </property>
     </widget>

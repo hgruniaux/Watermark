@@ -50,7 +50,7 @@
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Watermark &lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;(Copyright (C) 2019 Hubert Gruniaux)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Watermark &lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;(Copyright (C) 2020 Hubert Gruniaux)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -62,7 +62,7 @@
            <property name="plainText">
             <string notr="true">MIT License
 
-Copyright (c) 2019 Hubert Gruniaux
+Copyright (c) 2020 Hubert Gruniaux
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the &quot;Software&quot;), to deal
