@@ -25,14 +25,14 @@
 #ifndef MAINWINDOW_HPP
 #define MAINWINDOW_HPP
 
+#include "preset.hpp"
 #include <QMainWindow>
 #include <QPixmap>
-#include <QSlider>
 #include <QRubberBand>
-#include "preset.hpp"
+#include <QSlider>
 
 namespace Ui {
-    class MainWindow;
+class MainWindow;
 }
 
 // ========================================================

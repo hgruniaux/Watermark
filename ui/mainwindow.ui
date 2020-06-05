@@ -75,9 +75,10 @@
     </property>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
-    <addaction name="actionLicense"/>
+    <addaction name="actionAboutQt"/>
     <addaction name="separator"/>
     <addaction name="actionReportIssue"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuPresets">
     <property name="title">
@@ -86,10 +87,6 @@
     <widget class="QMenu" name="menuSavedPreset">
      <property name="title">
       <string>&amp;Presets</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../ressources/icons.qrc">
-       <normaloff>:/icons/48px/presets</normaloff>:/icons/48px/presets</iconset>
      </property>
      <addaction name="action_4"/>
     </widget>
@@ -104,7 +101,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidgetWatermark">
    <property name="windowIcon">
-    <iconset resource="../ressources/icons.qrc">
+    <iconset>
      <normaloff>:/icons/48px/watermark</normaloff>:/icons/48px/watermark</iconset>
    </property>
    <property name="features">
@@ -126,7 +123,7 @@
     </sizepolicy>
    </property>
    <property name="windowIcon">
-    <iconset resource="../ressources/icons.qrc">
+    <iconset>
      <normaloff>:/icons/48px/preview</normaloff>:/icons/48px/preview</iconset>
    </property>
    <property name="features">
@@ -149,7 +146,7 @@
   </widget>
   <widget class="QDockWidget" name="dockWidgetCrop">
    <property name="windowIcon">
-    <iconset resource="../ressources/icons.qrc">
+    <iconset>
      <normaloff>:/icons/48px/crop</normaloff>:/icons/48px/crop</iconset>
    </property>
    <property name="features">
@@ -165,20 +162,15 @@
   </widget>
   <action name="actionExit">
    <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/exit</normaloff>:/icons/48px/exit</iconset>
+    <iconset theme="application-exit"/>
    </property>
    <property name="text">
     <string>&amp;Exit</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+Q</string>
-   </property>
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/save</normaloff>:/icons/48px/save</iconset>
+    <iconset theme="document-save"/>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -186,14 +178,10 @@
    <property name="toolTip">
     <string>Save the image</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
   </action>
   <action name="actionSaveAs">
    <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/save-as</normaloff>:/icons/48px/save-as</iconset>
+    <iconset theme="document-save-as"/>
    </property>
    <property name="text">
     <string>Save &amp;as...</string>
@@ -201,14 +189,10 @@
    <property name="toolTip">
     <string>Save the image as...</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
-   </property>
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/settings</normaloff>:/icons/48px/settings</iconset>
+    <iconset theme="settings"/>
    </property>
    <property name="text">
     <string>Sett&amp;ings</string>
@@ -216,13 +200,10 @@
    <property name="toolTip">
     <string>Open settings</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+P</string>
-   </property>
   </action>
   <action name="actionDocumentation">
    <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
+    <iconset>
      <normaloff>:/icons/48px/help</normaloff>:/icons/48px/help</iconset>
    </property>
    <property name="text">
@@ -237,8 +218,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/about</normaloff>:/icons/48px/about</iconset>
+    <iconset theme="help-about"/>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -249,8 +229,7 @@
   </action>
   <action name="actionReportIssue">
    <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/bug</normaloff>:/icons/48px/bug</iconset>
+    <iconset theme="bug"/>
    </property>
    <property name="text">
     <string>Report &amp;issue</string>
@@ -261,17 +240,13 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/open</normaloff>:/icons/48px/open</iconset>
+    <iconset theme="document-open"/>
    </property>
    <property name="text">
     <string>&amp;Open</string>
    </property>
    <property name="toolTip">
     <string>Open an image</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionStartWatcher">
@@ -281,30 +256,18 @@
   </action>
   <action name="actionSaveFinish">
    <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/save</normaloff>:/icons/48px/save</iconset>
+    <iconset theme="document-save"/>
    </property>
    <property name="text">
     <string>Save &amp;finish</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+F</string>
-   </property>
   </action>
   <action name="actionLicense">
-   <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/license</normaloff>:/icons/48px/license</iconset>
-   </property>
    <property name="text">
     <string>&amp;License</string>
    </property>
   </action>
   <action name="actionSavePreset">
-   <property name="icon">
-    <iconset resource="../ressources/icons.qrc">
-     <normaloff>:/icons/48px/save-preset</normaloff>:/icons/48px/save-preset</iconset>
-   </property>
    <property name="text">
     <string>&amp;Save preset</string>
    </property>
@@ -312,6 +275,14 @@
   <action name="action_4">
    <property name="text">
     <string notr="true">...</string>
+   </property>
+  </action>
+  <action name="actionAboutQt">
+   <property name="icon">
+    <iconset theme="qt"/>
+   </property>
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>

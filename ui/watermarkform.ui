@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>390</width>
-    <height>591</height>
+    <height>704</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -579,8 +579,7 @@
           <string>No watermark</string>
          </property>
          <property name="icon">
-          <iconset resource="../ressources/icons.qrc">
-           <normaloff>:/icons/48px/no</normaloff>:/icons/48px/no</iconset>
+          <iconset theme="empty"/>
          </property>
         </item>
        </widget>
@@ -596,8 +595,7 @@
            <string>Add</string>
           </property>
           <property name="icon">
-           <iconset resource="../ressources/icons.qrc">
-            <normaloff>:/icons/48px/add</normaloff>:/icons/48px/add</iconset>
+           <iconset theme="add"/>
           </property>
          </widget>
         </item>
@@ -607,8 +605,7 @@
            <string>Remove</string>
           </property>
           <property name="icon">
-           <iconset resource="../ressources/icons.qrc">
-            <normaloff>:/icons/48px/remove</normaloff>:/icons/48px/remove</iconset>
+           <iconset theme="remove"/>
           </property>
          </widget>
         </item>

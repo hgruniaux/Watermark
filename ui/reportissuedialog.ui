@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>326</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Report Issue</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../ressources/icons.qrc">
+   <iconset>
     <normaloff>:/icons/48px/bug</normaloff>:/icons/48px/bug</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,0">

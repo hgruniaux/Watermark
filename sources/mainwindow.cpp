@@ -23,32 +23,32 @@
 //
 
 #include <QDropEvent>
-#include <QMimeData>
 #include <QFileDialog>
-#include <QProxyStyle>
-#include <QStyleOption>
+#include <QFileInfo>
+#include <QImageReader>
+#include <QImageWriter>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QPainter>
-#include <QImageWriter>
-#include <QImageReader>
-#include <QFileInfo>
+#include <QProxyStyle>
+#include <QStyleOption>
 
 #include <QDebug>
 
 #include "aboutdialog.hpp"
 #include "licensedialog.hpp"
-#include "reportissuedialog.hpp"
 #include "mainwindow.hpp"
+#include "reportissuedialog.hpp"
 #include "ui_mainwindow.h"
 
 // ========================================================
 // class MainWindow
 // ========================================================
 
-MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
 {
     PresetManager::makeDirectory();
     WatermarkManager::makeDirectory();
@@ -101,14 +101,16 @@ void MainWindow::loadImage(const QString& path)
     if (image.isNull()) {
         QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
             tr("Cannot load %1: %2")
-            .arg(QDir::toNativeSeparators(path), reader.errorString()));
-    }
-    else {
+                .arg(QDir::toNativeSeparators(path), reader.errorString()));
+    } else {
         m_zoomSlider->setEnabled(true);
         m_path = path;
         setImage(QPixmap::fromImage(image));
         const QString message = tr("Opened \"%1\", %2x%3, Depth: %4")
-            .arg(QDir::toNativeSeparators(path)).arg(image.width()).arg(image.height()).arg(image.depth());
+                                    .arg(QDir::toNativeSeparators(path))
+                                    .arg(image.width())
+                                    .arg(image.height())
+                                    .arg(image.depth());
         statusBar()->showMessage(message);
     }
 }
@@ -161,9 +163,8 @@ void MainWindow::saveImage()
         if (!writer.write(ui->editor->generate().toImage())) {
             QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
                 tr("Cannot save %1: %2")
-                .arg(QDir::toNativeSeparators(m_path), writer.errorString()));
-        }
-        else {
+                    .arg(QDir::toNativeSeparators(m_path), writer.errorString()));
+        } else {
             const QString message = tr("Saved \"%1\"").arg(QDir::toNativeSeparators(m_path));
             statusBar()->showMessage(message);
         }
@@ -188,9 +189,8 @@ void MainWindow::saveImageAs()
             if (!writer.write(ui->editor->generate().toImage())) {
                 QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
                     tr("Cannot save %1: %2")
-                    .arg(QDir::toNativeSeparators(path), writer.errorString()));
-            }
-            else {
+                        .arg(QDir::toNativeSeparators(path), writer.errorString()));
+            } else {
                 const QString message = tr("Saved \"%1\"").arg(QDir::toNativeSeparators(path));
                 statusBar()->showMessage(message);
             }
@@ -218,10 +218,9 @@ bool MainWindow::savePreset()
     if (!PresetManager::addPreset(preset, &error)) {
         QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
             tr("Cannot save preset %1: %2")
-            .arg(QDir::toNativeSeparators(name), error));
+                .arg(QDir::toNativeSeparators(name), error));
         return false;
-    }
-    else {
+    } else {
         statusBar()->showMessage(tr("Preset saved: \"%1\"").arg(name));
         addPreset(preset);
         return true;
@@ -235,7 +234,7 @@ void MainWindow::addPreset(const Preset& preset)
             action->disconnect();
             connect(action, &QAction::triggered, [this, preset]() {
                 setPreset(preset);
-                });
+            });
 
             return;
         }
@@ -243,7 +242,7 @@ void MainWindow::addPreset(const Preset& preset)
 
     ui->menuSavedPreset->addAction(preset.name, [this, preset]() {
         setPreset(preset);
-        });
+    });
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event)
@@ -257,21 +256,18 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
     if (event->mimeData()->hasImage()) {
         event->acceptProposedAction();
         return;
-    }
-    else if (event->mimeData()->hasUrls()) {
+    } else if (event->mimeData()->hasUrls()) {
         QList<QUrl> urls = event->mimeData()->urls();
         if (urls.size() != 1) {
             event->ignore();
             return;
-        }
-        else {
+        } else {
             QByteArray format = QImageReader::imageFormat(urls.first().toLocalFile());
             if (QImageReader::supportedImageFormats().contains(format)) {
                 event->acceptProposedAction();
                 return;
             }
         }
-        
     }
 
     event->ignore();
@@ -281,8 +277,7 @@ void MainWindow::dragMoveEvent(QDragMoveEvent* event)
     if (event->answerRect().intersects(ui->editor->rect())) {
         m_rubberBand->show();
         event->accept();
-    }
-    else {
+    } else {
         m_rubberBand->hide();
         event->ignore();
     }
@@ -299,10 +294,11 @@ void MainWindow::dropEvent(QDropEvent* event)
         m_path = "unknown";
         setImage(QPixmap::fromImage(image));
         const QString message = tr("Image dragged, %1x%2, Depth: %3")
-            .arg(image.width()).arg(image.height()).arg(image.depth());
+                                    .arg(image.width())
+                                    .arg(image.height())
+                                    .arg(image.depth());
         statusBar()->showMessage(message);
-    }
-    else {
+    } else {
         QUrl url = event->mimeData()->urls().first();
         QString path = url.toLocalFile();
         loadImage(path);
@@ -313,12 +309,17 @@ void MainWindow::dropEvent(QDropEvent* event)
 
 void MainWindow::initActions()
 {
+    ui->actionOpen->setShortcut(QKeySequence::Open);
+    ui->actionSave->setShortcut(QKeySequence::Save);
+    ui->actionSaveAs->setShortcut(QKeySequence::SaveAs);
+    ui->actionSettings->setShortcut(QKeySequence::Preferences);
+    ui->actionExit->setShortcut(QKeySequence::Quit);
+
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openImage);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveImage);
     connect(ui->actionSaveFinish, &QAction::triggered, this, &MainWindow::saveImageFinish);
     connect(ui->actionSaveAs, &QAction::triggered, this, &MainWindow::saveImageAs);
     connect(ui->actionSavePreset, &QAction::triggered, this, QOverload<>::of(&MainWindow::savePreset));
-    connect(ui->actionLicense, &QAction::triggered, [this]() { auto dialog = new LicenseDialog(this); dialog->open(); });
     connect(ui->actionAbout, &QAction::triggered, [this]() { auto dialog = new AboutDialog(this); dialog->open(); });
     connect(ui->actionReportIssue, &QAction::triggered, [this]() { auto dialog = new ReportIssueDialog(this); dialog->open(); });
     connect(ui->actionExit, &QAction::triggered, []() { qApp->exit(); });

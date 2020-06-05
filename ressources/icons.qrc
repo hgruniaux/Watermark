@@ -1,24 +1,13 @@
 <RCC>
-    <qresource prefix="/icons/48px">
-        <file alias="about">icons/about.48px.png</file>
-        <file alias="add-folder">icons/add-folder.48px.png</file>
-        <file alias="add">icons/add.48px.png</file>
-        <file alias="bug">icons/bug.48px.png</file>
-        <file alias="crop">icons/crop.48px.png</file>
-        <file alias="exit">icons/exit.48px.png</file>
-        <file alias="folder">icons/folder.48px.png</file>
-        <file alias="help">icons/help.48px.png</file>
-        <file alias="license">icons/license.48px.png</file>
-        <file alias="no">icons/no.48px.png</file>
-        <file alias="open">icons/open.48px.png</file>
-        <file alias="opened-folder">icons/opened-folder.48px.png</file>
-        <file alias="presets">icons/presets.48px.png</file>
-        <file alias="preview">icons/preview.48px.png</file>
-        <file alias="remove">icons/remove.48px.png</file>
-        <file alias="save-as">icons/save-as.48px.png</file>
-        <file alias="save-preset">icons/save-preset.48px.png</file>
-        <file alias="save">icons/save.48px.png</file>
-        <file alias="settings">icons/settings.48px.png</file>
-        <file alias="watermark">icons/watermark.48px.png</file>
+    <qresource prefix="/icons">
+        <file alias="add">icons/add.png</file>
+        <file alias="application-exit">icons/application-exit.png</file>
+        <file alias="bug">icons/bug.png</file>
+        <file alias="document-save-as">icons/document-save-as.png</file>
+        <file alias="document-save">icons/document-save.png</file>
+        <file alias="empty">icons/empty.png</file>
+        <file alias="help-about">icons/help-about.png</file>
+        <file alias="remove">icons/remove.png</file>
+        <file alias="settings">icons/settings.png</file>
     </qresource>
 </RCC>
