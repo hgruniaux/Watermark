@@ -42,7 +42,7 @@ Editor::Editor(QWidget* parent)
     connect(m_croppingPreview, &CropEditor::cropMoved, this, &Editor::cropMoved);
     connect(m_croppingPreview, &CropEditor::cropEdited, this, &Editor::cropEdited);
     connect(m_croppingPreview, &CropEditor::cropEdited, [this]() { m_watermarkPreview->setCrop(m_croppingPreview->m_crop); emit edited(); });
-    setWatermarkAlpha(1.0);
+    setWatermarkOpacity(1.0);
     setWatermarkSize(1.0);
     setWatermarkAnchor(AnchorCenter);
 }
@@ -141,9 +141,15 @@ void Editor::setWatermarkAnchor(WatermarkAnchor anchor)
     m_watermarkPreview->update();
     emit edited();
 }
-void Editor::setWatermarkAlpha(qreal alpha)
+void Editor::setWatermarkOpacity(qreal opacity)
 {
-    m_watermarkPreview->m_alpha = alpha;
+    m_watermarkPreview->m_opacity = opacity;
+    m_watermarkPreview->update();
+    emit edited();
+}
+void Editor::setWatermarkUseSize(bool use)
+{
+    m_watermarkPreview->m_useSize = use;
     m_watermarkPreview->update();
     emit edited();
 }
@@ -153,10 +159,21 @@ void Editor::setWatermarkSize(qreal size)
     m_watermarkPreview->update();
     emit edited();
 }
+void Editor::setWatermarkUseRotation(bool use)
+{
+    m_watermarkPreview->m_useRotation = use;
+    m_watermarkPreview->update();
+    emit edited();
+}
 void Editor::setWatermarkRotation(int angle)
 {
     m_watermarkPreview->m_rotation = angle;
     m_watermarkPreview->update();
+    emit edited();
+}
+void Editor::setWatermarkUseColor(bool use)
+{
+    m_watermarkPreview->setUseColor(use);
     emit edited();
 }
 void Editor::setWatermarkColor(const QColor& color)
@@ -164,24 +181,6 @@ void Editor::setWatermarkColor(const QColor& color)
     m_watermarkPreview->setColor(color);
     emit edited();
 }
-void Editor::setWatermarkResize(bool resize)
-{
-    m_watermarkPreview->m_resize = resize;
-    m_watermarkPreview->update();
-    emit edited();
-}
-void Editor::setWatermarkRotate(bool rotate)
-{
-    m_watermarkPreview->m_rotate = rotate;
-    m_watermarkPreview->update();
-    emit edited();
-}
-void Editor::setWatermarkColorize(bool colorize)
-{
-    m_watermarkPreview->setColorize(colorize);
-    emit edited();
-}
-
 void Editor::setWatermarkUseOffset(bool use)
 {
     m_watermarkPreview->m_useOffset = use;
@@ -547,18 +546,7 @@ WatermarkAnchor CropEditor::resizeCorner(const QPoint& pos)
 WatermarkEditor::WatermarkEditor(QWidget* parent)
     : QWidget(parent)
 {
-    m_crop = QRect(0, 0, 0, 0);
-    m_resize = true;
-    m_alpha = 1;
-    m_size = 1;
-    m_rotate = false;
-    m_rotation = 0;
     m_anchor = AnchorCenter;
-    m_pos = QPoint(0, 0);
-    m_watermark = QPixmap();
-    m_coloredWatermark = QPixmap();
-    m_color = QColor(0, 0, 0, 128);
-    m_colorize = false;
 }
 
 void WatermarkEditor::drawWatermark(QPainter* painter, bool scaled)
@@ -570,7 +558,7 @@ void WatermarkEditor::drawWatermark(QPainter* painter, bool scaled)
             QRect crop = scaled ? editor()->mapFrom(m_crop) : m_crop;
             QRect rect;
             QSize size;
-            if (m_resize) {
+            if (m_useSize) {
                 size = m_watermark.size().scaled(crop.width() * 1 / 3, crop.height() * 1 / 3, Qt::KeepAspectRatio);
                 size = size.scaled(size * m_size, Qt::KeepAspectRatio);
             } else {
@@ -583,14 +571,14 @@ void WatermarkEditor::drawWatermark(QPainter* painter, bool scaled)
             }
 
             int rotation = 0;
-            if (m_rotate)
+            if (m_useRotation)
                 rotation = m_rotation;
 
             // Draw the watermark
-            QPixmap image = (m_colorize ? m_coloredWatermark : m_watermark).scaled(size);
+            QPixmap image = (m_useColor ? m_coloredWatermark : m_watermark).scaled(size);
             if (scaled)
                 painter->translate(crop.topLeft());
-            painter->setOpacity(m_alpha);
+            painter->setOpacity(m_opacity);
             painter->setClipRect(QRect(0, 0, crop.width(), crop.height()));
             if (m_anchor != AnchorRepeated) {
                 int width = size.width();
@@ -640,7 +628,7 @@ void WatermarkEditor::updatePosition()
     int halfCropHeight = m_crop.height() / 2;
 
     QSize size;
-    if (m_resize) {
+    if (m_useSize) {
         size = m_watermark.size().scaled(m_crop.width() * 1 / 3, m_crop.height() * 1 / 3, Qt::KeepAspectRatio);
         size = size.scaled(size * m_size, Qt::KeepAspectRatio);
     } else {
@@ -693,7 +681,7 @@ void WatermarkEditor::setCrop(const QRect& crop)
 void WatermarkEditor::setWatermark(const QPixmap& pixmap)
 {
     m_watermark = pixmap;
-    if (m_colorize) {
+    if (m_useColor) {
         setColor(m_color);
     } else {
         m_coloredWatermark = m_watermark;
@@ -714,9 +702,9 @@ void WatermarkEditor::setColor(const QColor& color)
     m_color = color;
     update();
 }
-void WatermarkEditor::setColorize(bool colorize)
+void WatermarkEditor::setUseColor(bool use)
 {
-    m_colorize = colorize;
+    m_useColor = use;
     update();
 }
 

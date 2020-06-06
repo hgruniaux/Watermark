@@ -113,14 +113,6 @@ QString WatermarkForm::watermarkName() const
         return QString();
     }
 }
-bool WatermarkForm::watermarkOriginalSize() const
-{
-    return ui->checkOriginalSize->isChecked();
-}
-bool WatermarkForm::watermarkOriginalColor() const
-{
-    return ui->checkOriginalColor->isChecked();
-}
 int WatermarkForm::watermarkIndex() const
 {
     return ui->listWidget->currentRow();
@@ -129,23 +121,34 @@ WatermarkAnchor WatermarkForm::watermarkAnchor() const
 {
     return static_cast<WatermarkAnchor>(ui->comboPosition->currentIndex());
 }
+qreal WatermarkForm::watermarkOpacity() const
+{
+    return ui->opacitySpinBox->value() / 100.f;
+}
+bool WatermarkForm::watermarkUseSize() const
+{
+    return ui->sizeGroupBox->isChecked();
+}
 qreal WatermarkForm::watermarkSize() const
 {
-    return ui->spinSize->value() / 100.f;
+    return ui->sizeSpinBox->value() / 100.f;
+}
+bool WatermarkForm::watermarkUseRotation() const
+{
+    return ui->rotationGroupBox->isChecked();
 }
 int WatermarkForm::watermarkRotation() const
 {
-    return ui->spinRotation->value();
+    return ui->rotationSpinBox->value();
 }
-qreal WatermarkForm::watermarkAlpha() const
+bool WatermarkForm::watermarkUseColor() const
 {
-    return ui->spinOpacity->value() / 100.f;
+    return ui->colorGroupBox->isChecked();
 }
 QColor WatermarkForm::watermarkColor() const
 {
     return m_color;
 }
-
 bool WatermarkForm::watermarkUseOffset() const
 {
     return ui->offsetGroupBox->isChecked();
@@ -157,34 +160,21 @@ QPoint WatermarkForm::watermarkOffset() const
         ui->yOffsetSpinBox->value());
 }
 
-void WatermarkForm::setWatermarkOriginalSize(bool original)
-{
-    ui->checkOriginalSize->setChecked(original);
-}
-void WatermarkForm::setWatermarkOriginalColor(bool original)
-{
-    ui->checkOriginalColor->setChecked(original);
-}
 void WatermarkForm::setWatermarkIndex(int index)
 {
     ui->listWidget->setCurrentRow(qBound(0, index, ui->listWidget->count() - 1));
 }
+void WatermarkForm::setWatermarkOpacity(qreal alpha)
+{
+    ui->opacitySpinBox->setValue(qBound(0, qRound(alpha * 100), 100));
+}
+void WatermarkForm::setWatermarkUseSize(bool use)
+{
+    ui->sizeGroupBox->setChecked(use);
+}
 void WatermarkForm::setWatermarkSize(qreal size)
 {
-    ui->spinSize->setValue(qBound(0, qRound(size * 100), 100));
-}
-void WatermarkForm::setWatermarkRotation(int angle)
-{
-    ui->spinRotation->setValue(qBound(0, qAbs(angle) % 360, 360));
-}
-void WatermarkForm::setWatermarkAlpha(qreal alpha)
-{
-    ui->spinOpacity->setValue(qBound(0, qRound(alpha * 100), 100));
-}
-void WatermarkForm::setWatermarkColor(const QColor& color)
-{
-    updateColor(color);
-    ui->spinColorOpacity->setValue(qBound(0, qRound(color.alphaF() * 100), 100));
+    ui->sizeSpinBox->setValue(qBound(0, qRound(size * 100), 100));
 }
 void WatermarkForm::setWatermarkAnchor(WatermarkAnchor anchor)
 {
@@ -225,6 +215,23 @@ void WatermarkForm::setWatermarkAnchor(WatermarkAnchor anchor)
     }
 }
 
+void WatermarkForm::setWatermarkUseRotation(bool use)
+{
+    ui->rotationGroupBox->setChecked(use);
+}
+void WatermarkForm::setWatermarkRotation(int angle)
+{
+    ui->rotationSpinBox->setValue(qBound(0, qAbs(angle) % 360, 360));
+}
+void WatermarkForm::setWatermarkUseColor(bool use)
+{
+    ui->colorGroupBox->setChecked(use);
+}
+void WatermarkForm::setWatermarkColor(const QColor& color)
+{
+    updateColor(color);
+    ui->colorOpacitySpinBox->setValue(qBound(0, qRound(color.alphaF() * 100), 100));
+}
 void WatermarkForm::setWatermarkUseOffset(bool use)
 {
     ui->offsetGroupBox->setChecked(use);
@@ -245,9 +252,9 @@ void WatermarkForm::pickColor()
 void WatermarkForm::updateColor(const QColor& color)
 {
     QColor c = color;
-    c.setAlphaF(ui->spinColorOpacity->value() / 100.);
+    c.setAlphaF(ui->colorOpacitySlider->value() / 100.);
     m_color = c;
-    ui->buttonPickColor->setStyleSheet(QString("background: %0").arg(c.name(QColor::HexRgb)));
+    ui->colorPushButton->setStyleSheet(QString("background: %0").arg(c.name(QColor::HexRgb)));
     emit watermarkColorChanged(c);
 }
 
@@ -272,43 +279,56 @@ void WatermarkForm::initSignals()
         }
     });
 
-    connect(ui->sliderOpacity, &QSlider::valueChanged, ui->spinOpacity, &QSpinBox::setValue);
-    connect(ui->spinOpacity, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderOpacity->setValue(value); emit watermarkAlphaChanged(value / 100.); });
+    // "Opacity" category
+    connect(ui->opacitySlider, &QSlider::valueChanged, ui->opacitySpinBox, &QSpinBox::setValue);
+    connect(ui->opacitySpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        ui->opacitySlider->setValue(value);
+        emit watermarkOpacityChanged(value / 100.);
+    });
 
-    connect(ui->sliderSize, &QSlider::valueChanged, ui->spinSize, &QSpinBox::setValue);
-    connect(ui->spinSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderSize->setValue(value); emit watermarkSizeChanged(value / 100.); });
+    // "Size" category
+    connect(ui->sizeGroupBox, &QGroupBox::toggled, [this](bool use) {
+        emit watermarkUseSizeToggled(use);
+    });
+    connect(ui->sizeSlider, &QSlider::valueChanged, ui->sizeSpinBox, &QSpinBox::setValue);
+    connect(ui->sizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        ui->sizeSlider->setValue(value);
+        emit watermarkSizeChanged(value / 100.);
+    });
 
-    connect(ui->dialRotation, &QDial::valueChanged, [this](int value) {
-        ui->spinRotation->blockSignals(true);
+    // "Rotation" category
+    connect(ui->rotationGroupBox, &QGroupBox::toggled, [this](bool use) {
+        emit watermarkUseRotationToggled(use);
+    });
+    connect(ui->rotationDial, &QDial::valueChanged, [this](int value) {
+        ui->rotationSpinBox->blockSignals(true);
         qDebug("%d", value);
         if (value < 270) {
-            ui->spinRotation->setValue(359 - (90 + qAbs(value)));
+            ui->rotationSpinBox->setValue(359 - (90 + qAbs(value)));
         } else {
-            ui->spinRotation->setValue(359 - (value - 270));
+            ui->rotationSpinBox->setValue(359 - (value - 270));
         }
-        ui->spinRotation->blockSignals(false);
-        emit watermarkRotationChanged(359 - ui->spinRotation->value());
+        ui->rotationSpinBox->blockSignals(false);
+        emit watermarkRotationChanged(359 - ui->rotationSpinBox->value());
     });
-    connect(ui->spinRotation, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
-        ui->dialRotation->blockSignals(true);
-        ui->dialRotation->setValue((359 - value) + 270);
-        ui->dialRotation->blockSignals(false);
+    connect(ui->rotationSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        ui->rotationDial->blockSignals(true);
+        ui->rotationDial->setValue((359 - value) + 270);
+        ui->rotationDial->blockSignals(false);
         emit watermarkRotationChanged(359 - value);
     });
 
-    connect(ui->sliderColorOpacity, &QSlider::valueChanged, ui->spinColorOpacity, &QSpinBox::setValue);
-    connect(ui->spinColorOpacity, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderColorOpacity->setValue(value); updateColor(m_color); });
-    connect(ui->buttonPickColor, &QPushButton::clicked, this, &WatermarkForm::pickColor);
-
-    connect(ui->checkOriginalSize, &QCheckBox::toggled, [this](bool v) { emit watermarkResizeToggled(!v); });
-    connect(ui->checkOriginalSize, &QCheckBox::toggled, [this](bool v) { ui->sliderSize->setEnabled(!v); ui->spinSize->setEnabled(!v); });
-
-    connect(ui->checkOriginalRotation, &QCheckBox::toggled, [this](bool v) { emit watermarkRotateToggled(!v); });
-    connect(ui->checkOriginalRotation, &QCheckBox::toggled, [this](bool v) { ui->dialRotation->setEnabled(!v); ui->spinRotation->setEnabled(!v); });
-
-    connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { emit watermarkColorizeToggled(!v); });
-    connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { ui->sliderColorOpacity->setEnabled(!v); ui->spinColorOpacity->setEnabled(!v); ui->buttonPickColor->setEnabled(!v); });
-    connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { if (!v) updateColor(m_color); });
+    // "Color" category
+    connect(ui->colorGroupBox, &QGroupBox::toggled, [this](bool use) {
+        emit watermarkUseColorToggled(use);
+        emit watermarkColorChanged(m_color);
+    });
+    connect(ui->colorOpacitySlider, &QSlider::valueChanged, ui->colorOpacitySpinBox, &QSpinBox::setValue);
+    connect(ui->colorOpacitySpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        ui->colorOpacitySlider->setValue(value);
+        updateColor(m_color);
+    });
+    connect(ui->colorPushButton, &QPushButton::clicked, this, &WatermarkForm::pickColor);
 
     // "Offset" category
     connect(ui->offsetGroupBox, &QGroupBox::toggled, [this](bool use) {

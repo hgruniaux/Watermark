@@ -41,7 +41,7 @@ class Editor : public QWidget {
 
 public:
     explicit Editor(QWidget* parent = nullptr);
-    virtual ~Editor() override { }
+    virtual ~Editor() override {}
 
     QPixmap generate() const;
 
@@ -63,14 +63,13 @@ public slots:
 
     void setWatermarkImage(const QPixmap& image);
     void setWatermarkAnchor(WatermarkAnchor anchor);
-    void setWatermarkAlpha(qreal alpha);
+    void setWatermarkOpacity(qreal opacity);
+    void setWatermarkUseSize(bool use);
     void setWatermarkSize(qreal size);
+    void setWatermarkUseRotation(bool use);
     void setWatermarkRotation(int angle);
+    void setWatermarkUseColor(bool use);
     void setWatermarkColor(const QColor& color);
-    void setWatermarkResize(bool resize);
-    void setWatermarkRotate(bool rotate);
-    void setWatermarkColorize(bool colorize);
-
     void setWatermarkUseOffset(bool use);
     void setWatermarkOffset(const QPoint& offset);
 
@@ -106,7 +105,7 @@ class CropEditor : public QWidget {
     Q_OBJECT
 public:
     explicit CropEditor(QWidget* parent = nullptr);
-    virtual ~CropEditor() override { }
+    virtual ~CropEditor() override {}
 
     Editor* editor() const { return static_cast<Editor*>(parent()); }
 
@@ -143,7 +142,7 @@ class WatermarkEditor : public QWidget {
     Q_OBJECT
 public:
     explicit WatermarkEditor(QWidget* parent = nullptr);
-    virtual ~WatermarkEditor() override { }
+    virtual ~WatermarkEditor() override {}
 
     Editor* editor() const { return static_cast<Editor*>(parent()); }
     void drawWatermark(QPainter* painter, bool scaled = true);
@@ -153,7 +152,7 @@ public slots:
     void setCrop(const QRect& crop);
     void setWatermark(const QPixmap& pixmap);
     void setColor(const QColor& color);
-    void setColorize(bool colorize);
+    void setUseColor(bool colorize);
 
 protected:
     virtual void paintEvent(QPaintEvent* event) override;
@@ -163,18 +162,18 @@ private:
 
 private:
     QRect m_crop;
-    bool m_resize;
-    qreal m_alpha;
-    qreal m_size;
-    bool m_rotate;
-    int m_rotation;
-    WatermarkAnchor m_anchor;
+    WatermarkAnchor m_anchor = AnchorCenter;
     QPoint m_pos;
     QPixmap m_watermark;
     QPixmap m_coloredWatermark;
-    QColor m_color;
-    bool m_colorize;
 
+    qreal m_opacity = 1.0;
+    bool m_useSize = false;
+    qreal m_size = 1.0;
+    bool m_useRotation = false;
+    int m_rotation = 0;
+    QColor m_color = QColor(0, 0, 0, 128);
+    bool m_useColor = false;
     QPoint m_offset;
     bool m_useOffset = false;
 }; // class WatermarkEditor

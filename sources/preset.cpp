@@ -51,13 +51,15 @@ bool Preset::save(const QString& path, QString* error) const
     stream << static_cast<quint8>(stream.version());
     // --- Body ---
     stream << name;
-    stream << watermark.originalSize;
-    stream << watermark.originalColor;
-    stream << watermark.anchor;
-    stream << watermark.size;
-    stream << watermark.rotation;
-    stream << watermark.alpha;
     stream << watermark.index;
+    stream << watermark.anchor;
+    stream << watermark.opacity;
+    stream << watermark.useSize;
+    stream << watermark.size;
+    stream << watermark.opacity;
+    stream << watermark.useRotation;
+    stream << watermark.rotation;
+    stream << watermark.useColor;
     stream << watermark.color;
     stream << watermark.useOffset;
     stream << watermark.offset;
@@ -103,26 +105,41 @@ bool Preset::load(const QString& path, QString* error)
     stream >> qtVersion;
     stream.setVersion(qtVersion);
     // --- Body ---
-    stream >> name;
-    stream >> watermark.originalSize;
-    stream >> watermark.originalColor;
-    stream >> watermark.anchor;
-    stream >> watermark.size;
-    if (version == 0x1) {
+    if (version <= 0x1) {
+        stream >> name;
+        stream >> watermark.useSize;
+        stream >> watermark.useColor;
+        stream >> watermark.anchor;
+        stream >> watermark.size;
+
         // First version has a "margin" field which is now replaced by an
         // offset field.
         qreal unused;
         stream >> unused;
         Q_UNUSED(unused);
+
+        stream >> watermark.rotation;
+        stream >> watermark.opacity;
+        stream >> watermark.index;
+        stream >> watermark.color;
+        stream >> crop.rect;
+        stream >> crop.fixed;
+    } else { // version >= 0x2
+        stream >> name;
+        stream >> watermark.index;
+        stream >> watermark.anchor;
+        stream >> watermark.opacity;
+        stream >> watermark.useSize;
+        stream >> watermark.size;
+        stream >> watermark.useRotation;
+        stream >> watermark.rotation;
+        stream >> watermark.useColor;
+        stream >> watermark.color;
+        stream >> watermark.useOffset;
+        stream >> watermark.offset;
+        stream >> crop.rect;
+        stream >> crop.fixed;
     }
-    stream >> watermark.rotation;
-    stream >> watermark.alpha;
-    stream >> watermark.index;
-    stream >> watermark.color;
-    stream >> watermark.useOffset;
-    stream >> watermark.offset;
-    stream >> crop.rect;
-    stream >> crop.fixed;
 
     if (stream.status() != QDataStream::Ok) {
         if (error)

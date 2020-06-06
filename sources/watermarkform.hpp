@@ -45,15 +45,15 @@ public:
     ~WatermarkForm();
 
     QString watermarkName() const;
-    bool watermarkOriginalSize() const;
-    bool watermarkOriginalColor() const;
     int watermarkIndex() const;
     WatermarkAnchor watermarkAnchor() const;
+    qreal watermarkOpacity() const;
+    bool watermarkUseSize() const;
     qreal watermarkSize() const;
+    bool watermarkUseRotation() const;
     int watermarkRotation() const;
-    qreal watermarkAlpha() const;
+    bool watermarkUseColor() const;
     QColor watermarkColor() const;
-
     bool watermarkUseOffset() const;
     QPoint watermarkOffset() const;
 
@@ -62,29 +62,28 @@ public slots:
     void addWatermark(const Watermark& watermark);
     void removeWatermark();
 
-    void setWatermarkOriginalSize(bool original);
-    void setWatermarkOriginalColor(bool original);
     void setWatermarkIndex(int index);
     void setWatermarkAnchor(WatermarkAnchor anchor);
+    void setWatermarkOpacity(qreal alpha);
+    void setWatermarkUseSize(bool use);
     void setWatermarkSize(qreal size);
+    void setWatermarkUseRotation(bool use);
     void setWatermarkRotation(int angle);
+    void setWatermarkUseColor(bool use);
     void setWatermarkColor(const QColor& color);
-    void setWatermarkAlpha(qreal alpha);
-
     void setWatermarkUseOffset(bool use);
     void setWatermarkOffset(const QPoint& offset);
 
 signals:
     void watermarkImageChanged(const QPixmap& image);
     void watermarkPositionChanged(WatermarkAnchor pos);
-    void watermarkAlphaChanged(qreal opacity);
+    void watermarkOpacityChanged(qreal opacity);
+    void watermarkUseSizeToggled(bool use);
     void watermarkSizeChanged(qreal size);
+    void watermarkUseRotationToggled(bool use);
     void watermarkRotationChanged(int angle);
+    void watermarkUseColorToggled(bool use);
     void watermarkColorChanged(const QColor& color);
-    void watermarkResizeToggled(bool resize);
-    void watermarkRotateToggled(bool rotate);
-    void watermarkColorizeToggled(bool colorize);
-
     void watermarkUseOffsetToggled(bool use);
     void watermarkOffsetChanged(const QPoint& offset);
 

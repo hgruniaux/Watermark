@@ -39,13 +39,14 @@ class Preset {
 public:
     QString name;
     struct {
-        bool originalSize;
-        bool originalColor;
-        quint8 anchor;
-        quint8 size;
-        quint16 rotation;
-        quint8 alpha;
         quint16 index;
+        quint8 anchor;
+        quint8 opacity;
+        bool useSize;
+        quint8 size;
+        bool useRotation;
+        quint16 rotation;
+        bool useColor;
         QColor color;
         bool useOffset;
         QPoint offset;
