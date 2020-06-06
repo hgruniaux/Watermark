@@ -40,8 +40,8 @@ class Editor : public QWidget {
     Q_OBJECT
 
 public:
-    explicit Editor(QWidget *parent = nullptr);
-    virtual ~Editor() override {}
+    explicit Editor(QWidget* parent = nullptr);
+    virtual ~Editor() override { }
 
     QPixmap generate() const;
 
@@ -65,12 +65,14 @@ public slots:
     void setWatermarkAnchor(WatermarkAnchor anchor);
     void setWatermarkAlpha(qreal alpha);
     void setWatermarkSize(qreal size);
-    void setWatermarkMargin(qreal margin);
     void setWatermarkRotation(int angle);
     void setWatermarkColor(const QColor& color);
     void setWatermarkResize(bool resize);
     void setWatermarkRotate(bool rotate);
     void setWatermarkColorize(bool colorize);
+
+    void setWatermarkUseOffset(bool use);
+    void setWatermarkOffset(const QPoint& offset);
 
     void zoom(qreal factor);
 
@@ -103,8 +105,8 @@ private:
 class CropEditor : public QWidget {
     Q_OBJECT
 public:
-    explicit CropEditor(QWidget *parent = nullptr);
-    virtual ~CropEditor() override {}
+    explicit CropEditor(QWidget* parent = nullptr);
+    virtual ~CropEditor() override { }
 
     Editor* editor() const { return static_cast<Editor*>(parent()); }
 
@@ -140,8 +142,8 @@ private:
 class WatermarkEditor : public QWidget {
     Q_OBJECT
 public:
-    explicit WatermarkEditor(QWidget *parent = nullptr);
-    virtual ~WatermarkEditor() override {}
+    explicit WatermarkEditor(QWidget* parent = nullptr);
+    virtual ~WatermarkEditor() override { }
 
     Editor* editor() const { return static_cast<Editor*>(parent()); }
     void drawWatermark(QPainter* painter, bool scaled = true);
@@ -159,14 +161,11 @@ protected:
 private:
     friend class Editor;
 
-    QMargins margins(const QSize& watermarkSize) const;
-
 private:
     QRect m_crop;
     bool m_resize;
     qreal m_alpha;
     qreal m_size;
-    qreal m_margin;
     bool m_rotate;
     int m_rotation;
     WatermarkAnchor m_anchor;
@@ -175,6 +174,9 @@ private:
     QPixmap m_coloredWatermark;
     QColor m_color;
     bool m_colorize;
+
+    QPoint m_offset;
+    bool m_useOffset = false;
 }; // class WatermarkEditor
 
 #endif // EDITOR_HPP

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>390</width>
-    <height>704</height>
+    <width>392</width>
+    <height>779</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -560,6 +560,48 @@
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QGroupBox" name="offsetGroupBox">
+        <property name="title">
+         <string>Offset</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="0,1,0,0,1">
+         <item>
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>x:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="xOffsetSpinBox"/>
+         </item>
+         <item>
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>y:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="yOffsetSpinBox"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -579,7 +621,8 @@
           <string>No watermark</string>
          </property>
          <property name="icon">
-          <iconset theme="empty"/>
+          <iconset theme="empty">
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </item>
        </widget>
@@ -595,7 +638,8 @@
            <string>Add</string>
           </property>
           <property name="icon">
-           <iconset theme="add"/>
+           <iconset theme="add">
+            <normaloff>.</normaloff>.</iconset>
           </property>
          </widget>
         </item>
@@ -605,7 +649,8 @@
            <string>Remove</string>
           </property>
           <property name="icon">
-           <iconset theme="remove"/>
+           <iconset theme="remove">
+            <normaloff>.</normaloff>.</iconset>
           </property>
          </widget>
         </item>

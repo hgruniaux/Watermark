@@ -22,14 +22,14 @@
 // SOFTWARE.
 //
 
-#include <QDataStream>
-#include <QApplication>
-#include <QStandardPaths>
-#include <QSettings>
-#include <QDebug>
-#include <QFile>
-#include <QDir>
 #include "preset.hpp"
+#include <QApplication>
+#include <QDataStream>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QSettings>
+#include <QStandardPaths>
 
 // ========================================================
 // class Preset
@@ -55,11 +55,12 @@ bool Preset::save(const QString& path, QString* error) const
     stream << watermark.originalColor;
     stream << watermark.anchor;
     stream << watermark.size;
-    stream << watermark.margin;
     stream << watermark.rotation;
     stream << watermark.alpha;
     stream << watermark.index;
     stream << watermark.color;
+    stream << watermark.useOffset;
+    stream << watermark.offset;
     stream << crop.rect;
     stream << crop.fixed;
 
@@ -107,11 +108,19 @@ bool Preset::load(const QString& path, QString* error)
     stream >> watermark.originalColor;
     stream >> watermark.anchor;
     stream >> watermark.size;
-    stream >> watermark.margin;
+    if (version == 0x1) {
+        // First version has a "margin" field which is now replaced by an
+        // offset field.
+        qreal unused;
+        stream >> unused;
+        Q_UNUSED(unused);
+    }
     stream >> watermark.rotation;
     stream >> watermark.alpha;
     stream >> watermark.index;
     stream >> watermark.color;
+    stream >> watermark.useOffset;
+    stream >> watermark.offset;
     stream >> crop.rect;
     stream >> crop.fixed;
 
@@ -168,9 +177,8 @@ PresetList PresetManager::presets()
         QString error;
         if (!preset.load(file.absoluteFilePath(), &error)) {
             qWarning() << "Error: Invalid preset file" << file
-                << ", " << error;
-        }
-        else {
+                       << ", " << error;
+        } else {
             presets.append(preset);
         }
     }
@@ -188,16 +196,17 @@ bool PresetManager::removePreset(const Preset& preset, QString* error)
     if (QFile::exists(file)) {
         bool result = QFile::remove(file);
         if (!result) {
-            if (error) *error = QString("Failed to remove preset file");
+            if (error)
+                *error = QString("Failed to remove preset file");
             return false;
-        }
-        else {
-            if (error) *error = QString();
+        } else {
+            if (error)
+                *error = QString();
             return true;
         }
-    }
-    else {
-        if (error) *error = QString("Preset doesn't exists");
+    } else {
+        if (error)
+            *error = QString("Preset doesn't exists");
         return false;
     }
 }
@@ -226,6 +235,6 @@ quint32 PresetManager::getMagicNumber()
 }
 quint8 PresetManager::getVersion()
 {
-    // Data Format version 1
-    return 0x1;
+    // Data Format version 2
+    return 0x2;
 }

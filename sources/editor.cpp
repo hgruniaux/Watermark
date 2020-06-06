@@ -153,12 +153,6 @@ void Editor::setWatermarkSize(qreal size)
     m_watermarkPreview->update();
     emit edited();
 }
-void Editor::setWatermarkMargin(qreal margin)
-{
-    m_watermarkPreview->m_margin = margin;
-    m_watermarkPreview->update();
-    emit edited();
-}
 void Editor::setWatermarkRotation(int angle)
 {
     m_watermarkPreview->m_rotation = angle;
@@ -185,6 +179,19 @@ void Editor::setWatermarkRotate(bool rotate)
 void Editor::setWatermarkColorize(bool colorize)
 {
     m_watermarkPreview->setColorize(colorize);
+    emit edited();
+}
+
+void Editor::setWatermarkUseOffset(bool use)
+{
+    m_watermarkPreview->m_useOffset = use;
+    m_watermarkPreview->update();
+    emit edited();
+}
+void Editor::setWatermarkOffset(const QPoint& offset)
+{
+    m_watermarkPreview->m_offset = offset;
+    m_watermarkPreview->update();
     emit edited();
 }
 
@@ -544,7 +551,6 @@ WatermarkEditor::WatermarkEditor(QWidget* parent)
     m_resize = true;
     m_alpha = 1;
     m_size = 1;
-    m_margin = 0;
     m_rotate = false;
     m_rotation = 0;
     m_anchor = AnchorCenter;
@@ -587,13 +593,16 @@ void WatermarkEditor::drawWatermark(QPainter* painter, bool scaled)
             painter->setOpacity(m_alpha);
             painter->setClipRect(QRect(0, 0, crop.width(), crop.height()));
             if (m_anchor != AnchorRepeated) {
-                QMargins margins = this->margins(size);
-
                 int width = size.width();
                 int height = size.height();
 
-                int translatedX = (rect.x() + width / 2) + margins.left() - margins.right();
-                int translatedY = (rect.y() + height / 2) + margins.top() - margins.bottom();
+                int translatedX = (rect.x() + width / 2);
+                int translatedY = (rect.y() + height / 2);
+
+                if (m_useOffset) {
+                    translatedX += m_offset.x();
+                    translatedY += m_offset.y();
+                }
 
                 painter->translate(translatedX, translatedY);
                 painter->rotate(rotation);
@@ -608,6 +617,11 @@ void WatermarkEditor::drawWatermark(QPainter* painter, bool scaled)
 
                 int translatedX = crop.size().width() / 2;
                 int translatedY = crop.size().height() / 2;
+
+                if (m_useOffset) {
+                    translatedX += m_offset.x();
+                    translatedY += m_offset.y();
+                }
 
                 painter->translate(translatedX, translatedY);
                 painter->rotate(rotation);
@@ -710,32 +724,4 @@ void WatermarkEditor::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
     drawWatermark(&painter);
-}
-
-QMargins WatermarkEditor::margins(const QSize& watermarkSize) const
-{
-    int marginX = m_margin * watermarkSize.width();
-    int marginY = m_margin * watermarkSize.height();
-
-    switch (m_anchor) {
-    case AnchorTop:
-        return QMargins(0, marginY, 0, 0);
-    case AnchorTopLeft:
-        return QMargins(marginX, marginY, 0, 0);
-    case AnchorTopRight:
-        return QMargins(0, marginY, marginX, 0);
-    case AnchorLeft:
-        return QMargins(marginX, 0, 0, 0);
-    case AnchorRight:
-        return QMargins(0, 0, marginX, 0);
-    case AnchorBottom:
-        return QMargins(0, 0, 0, marginY);
-    case AnchorBottomLeft:
-        return QMargins(marginX, 0, 0, marginY);
-    case AnchorBottomRight:
-        return QMargins(0, 0, marginX, marginY);
-    case AnchorCenter:
-    default:
-        return QMargins();
-    }
 }

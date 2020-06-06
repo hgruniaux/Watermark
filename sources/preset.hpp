@@ -25,11 +25,11 @@
 #ifndef PRESET_HPP
 #define PRESET_HPP
 
+#include "watermark.hpp"
+#include <QColor>
+#include <QRect>
 #include <QString>
 #include <QVector>
-#include <QRect>
-#include <QColor>
-#include "watermark.hpp"
 
 // ========================================================
 // class Preset
@@ -43,11 +43,12 @@ public:
         bool originalColor;
         quint8 anchor;
         quint8 size;
-        quint8 margin;
         quint16 rotation;
         quint8 alpha;
         quint16 index;
         QColor color;
+        bool useOffset;
+        QPoint offset;
     } watermark;
     struct {
         QRect rect;

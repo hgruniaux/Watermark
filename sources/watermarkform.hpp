@@ -25,9 +25,9 @@
 #ifndef WATERMARKFORM_HPP
 #define WATERMARKFORM_HPP
 
-#include <QWidget>
-#include <QSettings>
 #include "watermark.hpp"
+#include <QSettings>
+#include <QWidget>
 
 namespace Ui {
 class WatermarkForm;
@@ -41,7 +41,7 @@ class WatermarkForm : public QWidget {
     Q_OBJECT
 
 public:
-    explicit WatermarkForm(QWidget *parent = nullptr);
+    explicit WatermarkForm(QWidget* parent = nullptr);
     ~WatermarkForm();
 
     QString watermarkName() const;
@@ -50,10 +50,12 @@ public:
     int watermarkIndex() const;
     WatermarkAnchor watermarkAnchor() const;
     qreal watermarkSize() const;
-    qreal watermarkMargin() const;
     int watermarkRotation() const;
     qreal watermarkAlpha() const;
     QColor watermarkColor() const;
+
+    bool watermarkUseOffset() const;
+    QPoint watermarkOffset() const;
 
 public slots:
     void addWatermark();
@@ -65,22 +67,26 @@ public slots:
     void setWatermarkIndex(int index);
     void setWatermarkAnchor(WatermarkAnchor anchor);
     void setWatermarkSize(qreal size);
-    void setWatermarkMargin(qreal margin);
     void setWatermarkRotation(int angle);
     void setWatermarkColor(const QColor& color);
     void setWatermarkAlpha(qreal alpha);
+
+    void setWatermarkUseOffset(bool use);
+    void setWatermarkOffset(const QPoint& offset);
 
 signals:
     void watermarkImageChanged(const QPixmap& image);
     void watermarkPositionChanged(WatermarkAnchor pos);
     void watermarkAlphaChanged(qreal opacity);
     void watermarkSizeChanged(qreal size);
-    void watermarkMarginChanged(qreal margin);
     void watermarkRotationChanged(int angle);
     void watermarkColorChanged(const QColor& color);
     void watermarkResizeToggled(bool resize);
     void watermarkRotateToggled(bool rotate);
     void watermarkColorizeToggled(bool colorize);
+
+    void watermarkUseOffsetToggled(bool use);
+    void watermarkOffsetChanged(const QPoint& offset);
 
 private slots:
     void pickColor();
@@ -91,7 +97,7 @@ private:
     void loadWatermarks();
 
 private:
-    Ui::WatermarkForm *ui;
+    Ui::WatermarkForm* ui;
     QColor m_color;
 }; // class WatermarkForm
 

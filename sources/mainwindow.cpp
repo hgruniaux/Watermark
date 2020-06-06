@@ -128,9 +128,10 @@ Preset MainWindow::preset(const QString& name) const
     preset.watermark.index = ui->watermarkForm->watermarkIndex();
     preset.watermark.rotation = ui->watermarkForm->watermarkRotation();
     preset.watermark.size = qRound(ui->watermarkForm->watermarkSize() * 100);
-    preset.watermark.margin = qRound(ui->watermarkForm->watermarkMargin() * 100);
     preset.watermark.alpha = qRound(ui->watermarkForm->watermarkAlpha() * 100);
     preset.watermark.color = ui->watermarkForm->watermarkColor();
+    preset.watermark.useOffset = ui->watermarkForm->watermarkUseOffset();
+    preset.watermark.offset = ui->watermarkForm->watermarkOffset();
     preset.crop.rect = ui->cropForm->cropRect();
     preset.crop.fixed = ui->cropForm->cropFixed();
     return preset;
@@ -141,10 +142,11 @@ void MainWindow::setPreset(const Preset& preset)
     ui->watermarkForm->setWatermarkOriginalColor(preset.watermark.originalColor);
     ui->watermarkForm->setWatermarkAlpha(preset.watermark.alpha / 100.);
     ui->watermarkForm->setWatermarkSize(preset.watermark.size / 100.);
-    ui->watermarkForm->setWatermarkMargin(preset.watermark.margin / 100.);
     ui->watermarkForm->setWatermarkAnchor(static_cast<WatermarkAnchor>(preset.watermark.anchor));
     ui->watermarkForm->setWatermarkIndex(preset.watermark.index);
     ui->watermarkForm->setWatermarkColor(preset.watermark.color);
+    ui->watermarkForm->setWatermarkUseOffset(preset.watermark.useOffset);
+    ui->watermarkForm->setWatermarkOffset(preset.watermark.offset);
     ui->cropForm->setCropRect(preset.crop.rect);
     ui->cropForm->setCropFixed(preset.crop.fixed);
 }
@@ -361,12 +363,13 @@ void MainWindow::initSignals()
     connect(ui->watermarkForm, &WatermarkForm::watermarkPositionChanged, ui->editor, &Editor::setWatermarkAnchor);
     connect(ui->watermarkForm, &WatermarkForm::watermarkAlphaChanged, ui->editor, &Editor::setWatermarkAlpha);
     connect(ui->watermarkForm, &WatermarkForm::watermarkSizeChanged, ui->editor, &Editor::setWatermarkSize);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkMarginChanged, ui->editor, &Editor::setWatermarkMargin);
     connect(ui->watermarkForm, &WatermarkForm::watermarkRotationChanged, ui->editor, &Editor::setWatermarkRotation);
     connect(ui->watermarkForm, &WatermarkForm::watermarkColorChanged, ui->editor, &Editor::setWatermarkColor);
     connect(ui->watermarkForm, &WatermarkForm::watermarkResizeToggled, ui->editor, &Editor::setWatermarkResize);
     connect(ui->watermarkForm, &WatermarkForm::watermarkRotateToggled, ui->editor, &Editor::setWatermarkRotate);
     connect(ui->watermarkForm, &WatermarkForm::watermarkColorizeToggled, ui->editor, &Editor::setWatermarkColorize);
+    connect(ui->watermarkForm, &WatermarkForm::watermarkUseOffsetToggled, ui->editor, &Editor::setWatermarkUseOffset);
+    connect(ui->watermarkForm, &WatermarkForm::watermarkOffsetChanged, ui->editor, &Editor::setWatermarkOffset);
     connect(ui->cropForm, &CropForm::cropResized, ui->editor, &Editor::setCropSize);
     connect(ui->cropForm, &CropForm::cropMoved, ui->editor, &Editor::setCropPosition);
     connect(ui->editor, &Editor::cropResized, ui->cropForm, &CropForm::setCropSize);

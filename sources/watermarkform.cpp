@@ -22,13 +22,13 @@
 // SOFTWARE.
 //
 
-#include <QFileInfo>
-#include <QFileDialog>
-#include <QColorDialog>
-#include <QDataStream>
-#include <QImageReader>
 #include "watermarkform.hpp"
 #include "ui_watermarkform.h"
+#include <QColorDialog>
+#include <QDataStream>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QImageReader>
 
 // ========================================================
 // class WatermarkForm
@@ -37,11 +37,17 @@
 static constexpr int kPixmapDataRole = 1256;
 static constexpr int kTextDataRole = 1257;
 
-WatermarkForm::WatermarkForm(QWidget* parent) :
-    QWidget(parent),
-    ui(new Ui::WatermarkForm)
+WatermarkForm::WatermarkForm(QWidget* parent)
+    : QWidget(parent)
+    , ui(new Ui::WatermarkForm)
 {
     ui->setupUi(this);
+
+    ui->xOffsetSpinBox->setMinimum(INT_MIN);
+    ui->xOffsetSpinBox->setMaximum(INT_MAX);
+    ui->yOffsetSpinBox->setMinimum(INT_MIN);
+    ui->yOffsetSpinBox->setMaximum(INT_MAX);
+
     initSignals();
     loadWatermarks();
     updateColor(QColor());
@@ -103,8 +109,7 @@ QString WatermarkForm::watermarkName() const
 {
     if (ui->listWidget->currentRow() > 0) {
         return ui->listWidget->currentItem()->text();
-    }
-    else {
+    } else {
         return QString();
     }
 }
@@ -128,10 +133,6 @@ qreal WatermarkForm::watermarkSize() const
 {
     return ui->spinSize->value() / 100.f;
 }
-qreal WatermarkForm::watermarkMargin() const
-{
-    return ui->spinMargin->value() / 100.f;
-}
 int WatermarkForm::watermarkRotation() const
 {
     return ui->spinRotation->value();
@@ -143,6 +144,17 @@ qreal WatermarkForm::watermarkAlpha() const
 QColor WatermarkForm::watermarkColor() const
 {
     return m_color;
+}
+
+bool WatermarkForm::watermarkUseOffset() const
+{
+    return ui->offsetGroupBox->isChecked();
+}
+QPoint WatermarkForm::watermarkOffset() const
+{
+    return QPoint(
+        ui->xOffsetSpinBox->value(),
+        ui->yOffsetSpinBox->value());
 }
 
 void WatermarkForm::setWatermarkOriginalSize(bool original)
@@ -161,10 +173,6 @@ void WatermarkForm::setWatermarkSize(qreal size)
 {
     ui->spinSize->setValue(qBound(0, qRound(size * 100), 100));
 }
-void WatermarkForm::setWatermarkMargin(qreal margin)
-{
-    ui->spinMargin->setValue(qBound(0, qRound(margin * 100), 100));
-}
 void WatermarkForm::setWatermarkRotation(int angle)
 {
     ui->spinRotation->setValue(qBound(0, qAbs(angle) % 360, 360));
@@ -182,18 +190,49 @@ void WatermarkForm::setWatermarkAnchor(WatermarkAnchor anchor)
 {
     ui->comboPosition->setCurrentIndex(static_cast<int>(anchor));
     switch (anchor) {
-    case AnchorTopLeft: ui->radioTopLeft->setChecked(true); break;
-    case AnchorTop: ui->radioTop->setChecked(true); break;
-    case AnchorTopRight: ui->radioTopRight->setChecked(true); break;
-    case AnchorLeft: ui->radioLeft->setChecked(true); break;
-    case AnchorCenter: ui->radioCenter->setChecked(true); break;
-    case AnchorRight: ui->radioRight->setChecked(true); break;
-    case AnchorBottomLeft: ui->radioBottomLeft->setChecked(true); break;
-    case AnchorBottom: ui->radioBottom->setChecked(true); break;
-    case AnchorBottomRight: ui->radioBottomRight->setChecked(true); break;
-    case AnchorRepeated: ui->radioRepeated->setChecked(true); break;
-    default: break;
+    case AnchorTopLeft:
+        ui->radioTopLeft->setChecked(true);
+        break;
+    case AnchorTop:
+        ui->radioTop->setChecked(true);
+        break;
+    case AnchorTopRight:
+        ui->radioTopRight->setChecked(true);
+        break;
+    case AnchorLeft:
+        ui->radioLeft->setChecked(true);
+        break;
+    case AnchorCenter:
+        ui->radioCenter->setChecked(true);
+        break;
+    case AnchorRight:
+        ui->radioRight->setChecked(true);
+        break;
+    case AnchorBottomLeft:
+        ui->radioBottomLeft->setChecked(true);
+        break;
+    case AnchorBottom:
+        ui->radioBottom->setChecked(true);
+        break;
+    case AnchorBottomRight:
+        ui->radioBottomRight->setChecked(true);
+        break;
+    case AnchorRepeated:
+        ui->radioRepeated->setChecked(true);
+        break;
+    default:
+        break;
     }
+}
+
+void WatermarkForm::setWatermarkUseOffset(bool use)
+{
+    ui->offsetGroupBox->setChecked(use);
+}
+void WatermarkForm::setWatermarkOffset(const QPoint& offset)
+{
+    ui->xOffsetSpinBox->setValue(offset.x());
+    ui->yOffsetSpinBox->setValue(offset.y());
 }
 
 void WatermarkForm::pickColor()
@@ -218,7 +257,7 @@ void WatermarkForm::initSignals()
         ui->buttonRemove->setEnabled(ui->listWidget->currentRow() > 0);
         QPixmap image = item->data(kPixmapDataRole).value<QPixmap>();
         emit watermarkImageChanged(image);
-        });
+    });
     connect(ui->listWidget, &QListWidget::itemChanged, [this](QListWidgetItem* item) {
         QString name = item->data(kTextDataRole).toString();
         Watermark before;
@@ -231,7 +270,7 @@ void WatermarkForm::initSignals()
             WatermarkManager::replaceWatermark(before, after);
             item->setData(kTextDataRole, item->text());
         }
-        });
+    });
 
     connect(ui->sliderOpacity, &QSlider::valueChanged, ui->spinOpacity, &QSpinBox::setValue);
     connect(ui->spinOpacity, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderOpacity->setValue(value); emit watermarkAlphaChanged(value / 100.); });
@@ -239,27 +278,23 @@ void WatermarkForm::initSignals()
     connect(ui->sliderSize, &QSlider::valueChanged, ui->spinSize, &QSpinBox::setValue);
     connect(ui->spinSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderSize->setValue(value); emit watermarkSizeChanged(value / 100.); });
 
-    connect(ui->sliderMargin, &QSlider::valueChanged, ui->spinMargin, &QSpinBox::setValue);
-    connect(ui->spinMargin, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderMargin->setValue(value); emit watermarkMarginChanged(value / 100.); });
-
     connect(ui->dialRotation, &QDial::valueChanged, [this](int value) {
         ui->spinRotation->blockSignals(true);
         qDebug("%d", value);
         if (value < 270) {
             ui->spinRotation->setValue(359 - (90 + qAbs(value)));
-        }
-        else {
+        } else {
             ui->spinRotation->setValue(359 - (value - 270));
         }
         ui->spinRotation->blockSignals(false);
         emit watermarkRotationChanged(359 - ui->spinRotation->value());
-        });
+    });
     connect(ui->spinRotation, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         ui->dialRotation->blockSignals(true);
         ui->dialRotation->setValue((359 - value) + 270);
         ui->dialRotation->blockSignals(false);
         emit watermarkRotationChanged(359 - value);
-        });
+    });
 
     connect(ui->sliderColorOpacity, &QSlider::valueChanged, ui->spinColorOpacity, &QSpinBox::setValue);
     connect(ui->spinColorOpacity, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) { ui->sliderColorOpacity->setValue(value); updateColor(m_color); });
@@ -274,6 +309,17 @@ void WatermarkForm::initSignals()
     connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { emit watermarkColorizeToggled(!v); });
     connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { ui->sliderColorOpacity->setEnabled(!v); ui->spinColorOpacity->setEnabled(!v); ui->buttonPickColor->setEnabled(!v); });
     connect(ui->checkOriginalColor, &QCheckBox::toggled, [this](bool v) { if (!v) updateColor(m_color); });
+
+    // "Offset" category
+    connect(ui->offsetGroupBox, &QGroupBox::toggled, [this](bool use) {
+        emit watermarkUseOffsetToggled(use);
+    });
+    connect(ui->xOffsetSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int x) {
+        emit watermarkOffsetChanged(QPoint(x, ui->yOffsetSpinBox->value()));
+    });
+    connect(ui->yOffsetSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int y) {
+        emit watermarkOffsetChanged(QPoint(ui->xOffsetSpinBox->value(), y));
+    });
 
     connect(ui->buttonAdd, &QPushButton::clicked, this, QOverload<>::of(&WatermarkForm::addWatermark));
     connect(ui->buttonRemove, &QPushButton::clicked, this, &WatermarkForm::removeWatermark);
