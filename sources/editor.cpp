@@ -24,6 +24,8 @@
 
 #include <QMouseEvent>
 #include <QPainter>
+#include <QScrollBar>
+#include <QDebug>
 #include <QtMath>
 
 #include "editor.hpp"
@@ -33,8 +35,17 @@
 // ========================================================
 
 Editor::Editor(QWidget* parent)
-    : QWidget(parent)
+    : QScrollArea(parent)
+    , m_imageLabel(new QLabel(this))
 {
+    m_imageLabel->setBackgroundRole(QPalette::Base);
+    m_imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    m_imageLabel->setScaledContents(true);
+
+    setBackgroundRole(QPalette::Dark);
+    setAlignment(Qt::AlignCenter);
+    setWidget(m_imageLabel);
+
     m_image = QPixmap();
     m_watermarkPreview = new WatermarkEditor(this);
     m_croppingPreview = new CropEditor(this);
@@ -45,6 +56,9 @@ Editor::Editor(QWidget* parent)
     setWatermarkOpacity(1.0);
     setWatermarkSize(1.0);
     setWatermarkAnchor(AnchorCenter);
+
+    connect(horizontalScrollBar(), &QScrollBar::valueChanged, this, &Editor::updateOverlaysPos);
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &Editor::updateOverlaysPos);
 }
 
 QPixmap Editor::generate() const
@@ -60,55 +74,53 @@ QPixmap Editor::generate() const
     }
 }
 
-QPointF Editor::zoomFactor() const
-{
-    return m_factor;
-}
 QRect Editor::mapTo(const QRect& rect) const
 {
-    QPointF factor = zoomFactor();
-    return QRect(QPoint(qRound(rect.x() * factor.x()), qRound(rect.y() * factor.y())),
-        QSize(qRound(rect.width() * factor.x()), qRound(rect.height() * factor.y())));
-}
-QPoint Editor::mapTo(const QPoint& point) const
-{
-    QPointF factor = zoomFactor();
-    return QPoint(qRound(point.x() * factor.x()), qRound(point.y() * factor.y()));
-}
-QSize Editor::mapTo(const QSize& size) const
-{
-    QPointF factor = zoomFactor();
-    return QSize(qRound(size.width() * factor.x()), qRound(size.height() * factor.y()));
-}
-QRect Editor::mapFrom(const QRect& rect) const
-{
-    QPointF factor = zoomFactor();
+    QPointF factor = mapFactor();
     return QRect(QPoint(qRound(rect.x() / factor.x()), qRound(rect.y() / factor.y())),
         QSize(qRound(rect.width() / factor.x()), qRound(rect.height() / factor.y())));
 }
+QPoint Editor::mapTo(const QPoint& point) const
+{
+    QPointF factor = mapFactor();
+    return QPoint(qRound(point.x() / factor.x()), qRound(point.y() / factor.y()));
+}
+QSize Editor::mapTo(const QSize& size) const
+{
+    QPointF factor = mapFactor();
+    return QSize(qRound(size.width() / factor.x()), qRound(size.height() / factor.y()));
+}
+QRect Editor::mapFrom(const QRect& rect) const
+{
+    QPointF factor = mapFactor();
+    return QRect(QPoint(qRound(rect.x() * factor.x()), qRound(rect.y() * factor.y())),
+        QSize(qRound(rect.width() * factor.x()), qRound(rect.height() * factor.y())));
+}
 QPoint Editor::mapFrom(const QPoint& point) const
 {
-    QPointF factor = zoomFactor();
-    return QPoint(qRound(point.x() / factor.x()), qRound(point.y() / factor.y()));
+    QPointF factor = mapFactor();
+    return QPoint(qRound(point.x() * factor.x()), qRound(point.y() * factor.y()));
 }
 QSize Editor::mapFrom(const QSize& size) const
 {
-    QPointF factor = zoomFactor();
-    return QSize(qRound(size.width() / factor.x()), qRound(size.height() / factor.y()));
+    QPointF factor = mapFactor();
+    return QSize(qRound(size.width() * factor.x()), qRound(size.height() * factor.y()));
 }
 
 void Editor::setImage(const QPixmap& image)
 {
+    m_imageLabel->setPixmap(image);
+
     m_image = image;
     m_watermarkPreview->m_crop = QRect(QPoint(0, 0), image.size());
-    m_watermarkPreview->resize(image.size());
-    m_watermarkPreview->setVisible(!image.isNull());
-    m_watermarkPreview->update();
     m_croppingPreview->m_crop = QRect(QPoint(0, 0), image.size());
-    m_croppingPreview->resize(image.size());
+
+    qreal scaleFactor = width() / (qreal)image.size().width();
+    zoom(scaleFactor);
+
+    m_watermarkPreview->setVisible(!image.isNull());
     m_croppingPreview->setVisible(!image.isNull());
-    m_croppingPreview->update();
-    zoom(1.0);
+
     emit edited();
 }
 
@@ -196,30 +208,76 @@ void Editor::setWatermarkOffset(const QPoint& offset)
 
 void Editor::zoom(qreal factor)
 {
-    m_zoom = factor;
-    m_imageRect.setSize(m_image.size().scaled(size() * factor, Qt::KeepAspectRatio));
-    m_imageRect.moveTo(width() / 2 - m_imageRect.width() / 2, height() / 2 - m_imageRect.height() / 2);
-    m_factor = QPointF(qreal(m_image.width()) / qreal(m_imageRect.width()),
-        qreal(m_image.height()) / qreal(m_imageRect.height()));
-    updateEditors();
+    m_scaleFactor = qBound(kMinZoomFactor, factor, kMaxZoomFactor);
+    scaleImage(1.0);
+}
+void Editor::zoomIn()
+{
+    scaleImage(1.25);
+}
+void Editor::zoomOut()
+{
+    scaleImage(0.8);
+}
+void Editor::normalSize()
+{
+    m_imageLabel->adjustSize();
+    m_scaleFactor = 1.0;
+}
+void Editor::fitToWindow(bool fit)
+{
+    setWidgetResizable(fit);
+    if (!fit)
+        normalSize();
 }
 
-void Editor::resizeEvent(QResizeEvent*)
+void Editor::scaleImage(qreal factor)
 {
-    zoom(m_zoom);
+    if (m_scaleFactor <= kMinZoomFactor && factor < 1)
+        return;
+    if (m_scaleFactor >= kMaxZoomFactor && factor > 1)
+        return;
+
+    m_scaleFactor *= factor;
+    m_imageLabel->resize(m_scaleFactor * m_imageLabel->pixmap(Qt::ReturnByValue).size());
+
+    adjustScrollBar(horizontalScrollBar(), factor);
+    adjustScrollBar(verticalScrollBar(), factor);
+
+    m_croppingPreview->resize(m_imageLabel->size());
+    m_watermarkPreview->resize(m_imageLabel->size());
+    updateOverlaysPos();
 }
-void Editor::paintEvent(QPaintEvent*)
+void Editor::adjustScrollBar(QScrollBar* scrollBar, qreal factor)
 {
-    QPainter painter(this);
-    painter.drawPixmap(m_imageRect, m_image);
+    scrollBar->setValue(int(factor * scrollBar->value()
+        + ((factor - 1) * scrollBar->pageStep() / 2)));
+}
+QPointF Editor::mapFactor() const
+{
+    return QPointF(m_imageLabel->width() / (qreal)m_image.width(),
+        m_imageLabel->height() / (qreal)m_image.height());
 }
 
-void Editor::updateEditors()
+void Editor::updateOverlaysPos()
 {
-    m_watermarkPreview->resize(m_imageRect.size());
-    m_watermarkPreview->move(m_imageRect.topLeft());
-    m_croppingPreview->resize(m_imageRect.size());
-    m_croppingPreview->move(m_imageRect.topLeft());
+    m_croppingPreview->move(m_imageLabel->pos());
+    m_watermarkPreview->move(m_imageLabel->pos());
+}
+
+void Editor::wheelEvent(QWheelEvent* event)
+{
+    QPoint delta = event->angleDelta();
+
+    if (delta.y() == 0 || !event->modifiers().testFlag(Qt::ControlModifier)) {
+        event->ignore();
+        return;
+    }
+
+    if (delta.y() > 0)
+        zoomIn();
+    else
+        zoomOut();
 }
 
 // ========================================================
@@ -244,6 +302,12 @@ void CropEditor::paintEvent(QPaintEvent*)
     const QColor textColor = QColor(0xFF, 0xFF, 0xFF);
 
     QPainter painter(this);
+
+    QSize imageSize = editor()->imageSize();
+    QSize widgetSize = size();
+    qreal xFactor = widgetSize.width() / (qreal)imageSize.width();
+    qreal yFactor = widgetSize.height() / (qreal)imageSize.height();
+
     QRect crop = editor()->mapFrom(m_crop);
 
     { // ===== Background =====
@@ -506,6 +570,10 @@ void CropEditor::mouseReleaseEvent(QMouseEvent*)
     setCursor(Qt::ArrowCursor);
     m_dragging = false;
     m_resizing = false;
+}
+void CropEditor::wheelEvent(QWheelEvent* event)
+{
+    event->ignore();
 }
 
 WatermarkAnchor CropEditor::resizeCorner(const QPoint& pos)

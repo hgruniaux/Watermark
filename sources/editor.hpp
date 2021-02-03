@@ -25,8 +25,10 @@
 #ifndef EDITOR_HPP
 #define EDITOR_HPP
 
-#include <QWidget>
+#include <QLabel>
+#include <QScrollArea>
 
+#include "imageviewer.hpp"
 #include "watermark.hpp"
 
 class CropEditor;
@@ -36,16 +38,15 @@ class WatermarkEditor;
 // class Editor
 // ========================================================
 
-class Editor : public QWidget {
+class Editor : public QScrollArea {
     Q_OBJECT
 
 public:
     explicit Editor(QWidget* parent = nullptr);
-    virtual ~Editor() override {}
+    virtual ~Editor() override { }
 
     QPixmap generate() const;
 
-    QPointF zoomFactor() const;
     QSize imageSize() const { return m_image.size(); }
     QRect mapTo(const QRect& rect) const;
     QPoint mapTo(const QPoint& point) const;
@@ -53,6 +54,8 @@ public:
     QRect mapFrom(const QRect& rect) const;
     QPoint mapFrom(const QPoint& point) const;
     QSize mapFrom(const QSize& size) const;
+
+    qreal scaleFactor() const { return m_scaleFactor; }
 
 public slots:
     void setImage(const QPixmap& image);
@@ -74,6 +77,18 @@ public slots:
     void setWatermarkOffset(const QPoint& offset);
 
     void zoom(qreal factor);
+    void zoomIn();
+    void zoomOut();
+    void normalSize();
+    void fitToWindow(bool fit);
+
+private:
+    void scaleImage(qreal factor);
+    void adjustScrollBar(QScrollBar* scrollBar, qreal factor);
+    QPointF mapFactor() const;
+
+private slots:
+    void updateOverlaysPos();
 
 signals:
     void edited();
@@ -82,16 +97,14 @@ signals:
     void cropEdited();
 
 protected:
-    virtual void resizeEvent(QResizeEvent*) override;
-    virtual void paintEvent(QPaintEvent*) override;
+    virtual void wheelEvent(QWheelEvent* event) override;
 
 private:
-    void updateEditors();
+    static constexpr qreal kMinZoomFactor = 0.333; // 33%
+    static constexpr qreal kMaxZoomFactor = 3.0; // 300%
 
-private:
-    QPointF m_factor;
-    qreal m_zoom;
-    QRect m_imageRect;
+    QLabel* m_imageLabel;
+    qreal m_scaleFactor = 1.0;
     QPixmap m_image;
     CropEditor* m_croppingPreview;
     WatermarkEditor* m_watermarkPreview;
@@ -105,7 +118,7 @@ class CropEditor : public QWidget {
     Q_OBJECT
 public:
     explicit CropEditor(QWidget* parent = nullptr);
-    virtual ~CropEditor() override {}
+    virtual ~CropEditor() override { }
 
     Editor* editor() const { return static_cast<Editor*>(parent()); }
 
@@ -119,6 +132,7 @@ protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
     virtual void mouseMoveEvent(QMouseEvent* event) override;
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
+    virtual void wheelEvent(QWheelEvent* event) override;
 
 private:
     WatermarkAnchor resizeCorner(const QPoint& pos);
@@ -142,7 +156,7 @@ class WatermarkEditor : public QWidget {
     Q_OBJECT
 public:
     explicit WatermarkEditor(QWidget* parent = nullptr);
-    virtual ~WatermarkEditor() override {}
+    virtual ~WatermarkEditor() override { }
 
     Editor* editor() const { return static_cast<Editor*>(parent()); }
     void drawWatermark(QPainter* painter, bool scaled = true);
