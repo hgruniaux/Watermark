@@ -4,7 +4,6 @@ set(HEADERS
     "config.hpp"
     "cropform.hpp"
     "editor.hpp"
-    "imageviewer.hpp"
     "mainwindow.hpp"
     "preset.hpp"
     "preview.hpp"
@@ -15,7 +14,6 @@ set(HEADERS
 set(SOURCES
     "cropform.cpp"
     "editor.cpp"
-    "imageviewer.cpp"
     "main.cpp"
     "mainwindow.cpp"
     "preset.cpp"
