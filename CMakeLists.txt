@@ -14,7 +14,6 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/ui)
 
 find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 
-set(RESSOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/ressources/icons.qrc)
+set(RESSOURCES ${CMAKE_CURRENT_SOURCE_DIR}/ressources/icons.qrc)
 
 add_subdirectory(sources)
