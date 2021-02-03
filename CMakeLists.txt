@@ -17,7 +17,4 @@ find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 set(RESSOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/ressources/icons.qrc)
 
-set(TRANSLATIONS
-	${CMAKE_CURRENT_SOURCE_DIR}/translations/wm_fr.ts)
-
 add_subdirectory(sources)

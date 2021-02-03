@@ -24,7 +24,6 @@
 
 #include "mainwindow.hpp"
 #include <QApplication>
-#include <QTranslator>
 
 int main(int argc, char *argv[])
 {
@@ -32,16 +31,6 @@ int main(int argc, char *argv[])
     a.setApplicationDisplayName("Watermark");
     a.setApplicationName("watermark");
     a.setApplicationVersion("1.1.0");
-
-    QTranslator translator;
-
-    if (translator.load(QLocale(), QLatin1String("qt"), QLatin1String("_"), QLatin1String("./translations/"), QLatin1String(".qm"))) {
-        a.installTranslator(&translator);
-    }
-
-    if (translator.load(QLocale(), QLatin1String("wm"), QLatin1String("_"), QLatin1String("./translations/"), QLatin1String(".qm"))) {
-        a.installTranslator(&translator);
-    }
 
     MainWindow w;
     w.showMaximized();
