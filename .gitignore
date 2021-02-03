@@ -1,5 +1,9 @@
-build/
+[Bb]uild/
+[Oo]ut/
+
 .vs/
 .vscode/
+.cache/
+
 CMakeSettings.json
 *.qm
