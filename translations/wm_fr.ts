@@ -10,7 +10,7 @@
     </message>
     <message>
         <location filename="../ui/aboutdialog.ui" line="58"/>
-        <source>Copyright © 2020 Hubert Gruniaux
+        <source>Copyright © 2021 Hubert Gruniaux
 Licensed under the MIT license</source>
         <translation>Sous license MIT</translation>
     </message>
