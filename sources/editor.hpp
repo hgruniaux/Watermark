@@ -28,7 +28,6 @@
 #include <QLabel>
 #include <QScrollArea>
 
-#include "imageviewer.hpp"
 #include "watermark.hpp"
 
 class CropEditor;
