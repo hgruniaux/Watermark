@@ -1,4 +1,7 @@
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/config.hpp" @ONLY)
+
 set(HEADERS
+	"config.hpp"
 	"cropform.hpp"
 	"editor.hpp"
 	"mainwindow.hpp"

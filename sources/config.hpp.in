@@ -22,23 +22,12 @@
 // SOFTWARE.
 //
 
-#include "mainwindow.hpp"
-#include "config.hpp"
-#include <QApplication>
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    a.setApplicationDisplayName("Watermark");
-    a.setApplicationName("watermark");
-    a.setApplicationVersion(VERSION_STRING);
+#define VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define VERSION_STRING "@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@"
 
-    MainWindow w;
-    w.showMaximized();
-
-    if(a.arguments().size() > 1) {
-        w.loadImage(a.arguments()[1]);
-    }
-
-    return a.exec();
-}
+#endif /* !CONFIG_HPP */
