@@ -47,12 +47,11 @@ public:
     QPixmap generate() const;
 
     QSize imageSize() const { return m_image.size(); }
-    QRect mapTo(const QRect& rect) const;
     QPoint mapTo(const QPoint& point) const;
-    QSize mapTo(const QSize& size) const;
     QRect mapFrom(const QRect& rect) const;
-    QPoint mapFrom(const QPoint& point) const;
-    QSize mapFrom(const QSize& size) const;
+    QRectF mapFrom(const QRectF& rect) const;
+    QPointF mapFrom(const QPointF& point) const;
+    QSizeF mapFrom(const QSizeF& point) const;
 
     qreal scaleFactor() const { return m_scaleFactor; }
 

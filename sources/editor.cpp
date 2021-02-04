@@ -74,37 +74,30 @@ QPixmap Editor::generate() const
     }
 }
 
-QRect Editor::mapTo(const QRect& rect) const
-{
-    QPointF factor = mapFactor();
-    return QRect(QPoint(qRound(rect.x() / factor.x()), qRound(rect.y() / factor.y())),
-        QSize(qRound(rect.width() / factor.x()), qRound(rect.height() / factor.y())));
-}
 QPoint Editor::mapTo(const QPoint& point) const
 {
     QPointF factor = mapFactor();
     return QPoint(qRound(point.x() / factor.x()), qRound(point.y() / factor.y()));
 }
-QSize Editor::mapTo(const QSize& size) const
-{
-    QPointF factor = mapFactor();
-    return QSize(qRound(size.width() / factor.x()), qRound(size.height() / factor.y()));
-}
 QRect Editor::mapFrom(const QRect& rect) const
 {
-    QPointF factor = mapFactor();
-    return QRect(QPoint(qRound(rect.x() * factor.x()), qRound(rect.y() * factor.y())),
-        QSize(qRound(rect.width() * factor.x()), qRound(rect.height() * factor.y())));
+    return mapFrom(QRectF(rect)).toRect();
 }
-QPoint Editor::mapFrom(const QPoint& point) const
+QRectF Editor::mapFrom(const QRectF& rect) const
 {
     QPointF factor = mapFactor();
-    return QPoint(qRound(point.x() * factor.x()), qRound(point.y() * factor.y()));
+    return QRectF(rect.x() * factor.x(), rect.y() * factor.y(),
+        rect.width() * factor.x(), rect.height() * factor.y());
 }
-QSize Editor::mapFrom(const QSize& size) const
+QPointF Editor::mapFrom(const QPointF& point) const
 {
     QPointF factor = mapFactor();
-    return QSize(qRound(size.width() * factor.x()), qRound(size.height() * factor.y()));
+    return QPointF(point.x() * factor.x(), point.y() * factor.y());
+}
+QSizeF Editor::mapFrom(const QSizeF& size) const
+{
+    QPointF factor = mapFactor();
+    return QSizeF(size.width() * factor.x(), size.height() * factor.y());
 }
 
 void Editor::setImage(const QPixmap& image)
@@ -308,97 +301,86 @@ void CropEditor::paintEvent(QPaintEvent*)
     const QColor textColor = QColor(0xFF, 0xFF, 0xFF);
 
     QPainter painter(this);
-
-    QSize imageSize = editor()->imageSize();
-    QSize widgetSize = size();
-    qreal xFactor = widgetSize.width() / (qreal)imageSize.width();
-    qreal yFactor = widgetSize.height() / (qreal)imageSize.height();
-
-    QRect crop = editor()->mapFrom(m_crop);
+    QRectF crop = editor()->mapFrom(QRectF(m_crop));
 
     { // ===== Background =====
-        // Configuration
         painter.setBrush(backgroundColor);
         painter.setPen(Qt::NoPen);
-        // Points
-        int left = crop.x();
-        int top = crop.y();
-        int right = crop.x() + crop.width();
-        int bottom = crop.y() + crop.height();
-        // Drawing
-        painter.drawRect(0, 0, width(), top);
-        painter.drawRect(0, bottom, width(), height() - bottom);
-        painter.drawRect(0, top, left, crop.height());
-        painter.drawRect(right, top, width() - right, crop.height());
+
+        const qreal left = crop.x();
+        const qreal top = crop.y();
+        const qreal right = crop.x() + crop.width();
+        const qreal bottom = crop.y() + crop.height();
+
+        painter.drawRect(QRectF(0, 0, width(), top));
+        painter.drawRect(QRectF(0, bottom, width(), height() - bottom));
+        painter.drawRect(QRectF(0, top, left, crop.height()));
+        painter.drawRect(QRectF(right, top, width() - right, crop.height()));
     }
 
     { // ===== Simple Border =====
-        // Configuration
         painter.setBrush(Qt::NoBrush);
         painter.setPen(QPen(gridColor, 1));
-        // Drawing
         painter.drawRect(crop.adjusted(0, 0, -1, -1));
     }
 
     { // ===== Border =====
-        // Configuration
         painter.setBrush(Qt::NoBrush);
         painter.setPen(QPen(borderColor, 3));
-        // Points
-        int length = qMin(20, qMin(crop.width(), crop.height()));
-        int left = crop.x();
-        int top = crop.y();
-        int right = crop.x() + crop.width() - 1;
-        int bottom = crop.y() + crop.height() - 1;
-        int startX = crop.x() + (crop.width() / 2) - length / 2;
-        int endX = crop.x() + (crop.width() / 2) + length / 2;
-        int startY = crop.y() + (crop.height() / 2) - length / 2;
-        int endY = crop.y() + (crop.height() / 2) + length / 2;
-        // Drawing
+
+        const qreal length = qMin<qreal>(20, qMin(crop.width(), crop.height()));
+        const qreal left = crop.x();
+        const qreal top = crop.y();
+        const qreal right = crop.x() + crop.width() - 1;
+        const qreal bottom = crop.y() + crop.height() - 1;
+        const qreal startX = crop.x() + (crop.width() / 2) - length / 2;
+        const qreal endX = crop.x() + (crop.width() / 2) + length / 2;
+        const qreal startY = crop.y() + (crop.height() / 2) - length / 2;
+        const qreal endY = crop.y() + (crop.height() / 2) + length / 2;
+
         { // ===== Corners =====
-            // Top Left Corner
-            painter.drawLine(left, top, left + length, top);
-            painter.drawLine(left, top, left, top + length);
-            // Top Right Corner
-            painter.drawLine(right, top, right - length, top);
-            painter.drawLine(right, top, right, top + length);
-            // Bottom Left Corner
-            painter.drawLine(left, bottom, left + length, bottom);
-            painter.drawLine(left, bottom, left, bottom - length);
-            // Bottom Right Corner
-            painter.drawLine(right, bottom, right - length, bottom);
-            painter.drawLine(right, bottom, right, bottom - length);
+            // Top left corner
+            painter.drawLine(QPointF(left, top), QPointF(left + length, top));
+            painter.drawLine(QPointF(left, top), QPointF(left, top + length));
+            // Top right corner
+            painter.drawLine(QPointF(right, top), QPointF(right - length, top));
+            painter.drawLine(QPointF(right, top), QPointF(right, top + length));
+            // Bottom left corner
+            painter.drawLine(QPointF(left, bottom), QPointF(left + length, bottom));
+            painter.drawLine(QPointF(left, bottom), QPointF(left, bottom - length));
+            // Bottom right corner
+            painter.drawLine(QPointF(right, bottom), QPointF(right - length, bottom));
+            painter.drawLine(QPointF(right, bottom), QPointF(right, bottom - length));
         }
         { // ===== Lines =====
-            // Top Line
-            painter.drawLine(startX, top, endX, top);
-            // Left Line
-            painter.drawLine(left, startY, left, endY);
-            // Bottom Line
-            painter.drawLine(startX, bottom, endX, bottom);
-            // Right Line
-            painter.drawLine(right, startY, right, endY);
+            // Top line
+            painter.drawLine(QPointF(startX, top), QPointF(endX, top));
+            // Left line
+            painter.drawLine(QPointF(left, startY), QPointF(left, endY));
+            // Bottom line
+            painter.drawLine(QPointF(startX, bottom), QPointF(endX, bottom));
+            // Right line
+            painter.drawLine(QPointF(right, startY), QPointF(right, endY));
         }
     }
 
     { // ===== Grid =====
-        // Configuration
         painter.setBrush(Qt::NoBrush);
         painter.setPen(QPen(gridColor, 1));
-        // Points
-        int left = crop.x();
-        int top = crop.y();
-        int right = crop.x() + crop.width() - 1;
-        int bottom = crop.y() + crop.height() - 1;
-        int firstX = crop.x() + (crop.width() * 1 / 3);
-        int secondX = crop.x() + (crop.width() * 2 / 3);
-        int firstY = crop.y() + (crop.height() * 1 / 3);
-        int secondY = crop.y() + (crop.height() * 2 / 3);
-        // Drawing
-        painter.drawLine(firstX, top, firstX, bottom);
-        painter.drawLine(secondX, top, secondX, bottom);
-        painter.drawLine(left, firstY, right, firstY);
-        painter.drawLine(left, secondY, right, secondY);
+
+        const qreal left = crop.x();
+        const qreal top = crop.y();
+        const qreal right = crop.x() + crop.width() - 1;
+        const qreal bottom = crop.y() + crop.height() - 1;
+        const qreal firstX = crop.x() + (crop.width() * 1 / 3);
+        const qreal secondX = crop.x() + (crop.width() * 2 / 3);
+        const qreal firstY = crop.y() + (crop.height() * 1 / 3);
+        const qreal secondY = crop.y() + (crop.height() * 2 / 3);
+
+        painter.drawLine(QPointF(firstX, top), QPointF(firstX, bottom));
+        painter.drawLine(QPointF(secondX, top), QPointF(secondX, bottom));
+        painter.drawLine(QPointF(left, firstY), QPointF(right, firstY));
+        painter.drawLine(QPointF(left, secondY), QPointF(right, secondY));
     }
 
     { // ===== Text =====
@@ -409,9 +391,8 @@ void CropEditor::paintEvent(QPaintEvent*)
         QString widthText = format.arg(m_crop.width());
         QString heightText = format.arg(m_crop.height());
 
-        // Points
         QFontMetricsF metrics(painter.font());
-        qreal padding = 5; // Additional padding to use around width and height text (in pixels)
+        const qreal padding = 5; // Additional padding to use around width and height text (in pixels)
         qreal widthY = crop.center().y() - crop.height() / 2.0;
         qreal heightX = crop.center().x() - crop.width() / 2.0;
 
@@ -636,71 +617,67 @@ WatermarkEditor::WatermarkEditor(QWidget* parent)
 void WatermarkEditor::drawWatermark(QPainter* painter, bool scaled)
 {
     if (!m_watermark.isNull()) {
-        painter->save();
-        {
-            // Computes the watermark position
-            QRect crop = scaled ? editor()->mapFrom(m_crop) : m_crop;
-            QRect rect;
-            QSize size;
-            if (m_useSize) {
-                size = m_watermark.size().scaled(crop.width() * 1 / 3, crop.height() * 1 / 3, Qt::KeepAspectRatio);
-                size = size.scaled(size * m_size, Qt::KeepAspectRatio);
-            } else {
-                size = scaled ? editor()->mapFrom(m_watermark.size()) : m_watermark.size();
-            }
-
-            if (m_anchor != AnchorRepeated) {
-                updatePosition();
-                rect = QRect(scaled ? editor()->mapFrom(m_pos) : m_pos, size);
-            }
-
-            int rotation = 0;
-            if (m_useRotation)
-                rotation = m_rotation;
-
-            // Draw the watermark
-            QPixmap image = (m_useColor ? m_coloredWatermark : m_watermark).scaled(size);
-            if (scaled)
-                painter->translate(crop.topLeft());
-            painter->setOpacity(m_opacity);
-            painter->setClipRect(QRect(0, 0, crop.width(), crop.height()));
-            if (m_anchor != AnchorRepeated) {
-                int width = size.width();
-                int height = size.height();
-
-                int translatedX = (rect.x() + width / 2);
-                int translatedY = (rect.y() + height / 2);
-
-                if (m_useOffset) {
-                    translatedX += m_offset.x();
-                    translatedY += m_offset.y();
-                }
-
-                painter->translate(translatedX, translatedY);
-                painter->rotate(rotation);
-                painter->drawPixmap(QRect(QPoint(-width / 2, -height / 2), QSize(width, height)), image);
-            } else {
-                QBrush brush(image);
-                painter->setBrush(brush);
-                painter->setPen(Qt::NoPen);
-
-                int width = crop.size().width() * 2;
-                int height = crop.size().height() * 2;
-
-                int translatedX = crop.size().width() / 2;
-                int translatedY = crop.size().height() / 2;
-
-                if (m_useOffset) {
-                    translatedX += m_offset.x();
-                    translatedY += m_offset.y();
-                }
-
-                painter->translate(translatedX, translatedY);
-                painter->rotate(rotation);
-                painter->drawRect(QRect(QPoint(-translatedX * 2, -translatedY * 2), QSize(width, height)));
-            }
+        // Computes the watermark position
+        QRectF crop = scaled ? editor()->mapFrom(QRectF(m_crop)) : m_crop;
+        QRectF rect;
+        QSizeF size;
+        if (m_useSize) {
+            size = m_watermark.size().scaled(crop.width() / 3.0, crop.height() / 3.0, Qt::KeepAspectRatio);
+            size = size.scaled(size * m_size, Qt::KeepAspectRatio);
+        } else {
+            size = scaled ? editor()->mapFrom(QSizeF(m_watermark.size())) : QSizeF(m_watermark.size());
         }
-        painter->restore();
+
+        if (m_anchor != AnchorRepeated) {
+            updatePosition();
+            rect = QRectF(scaled ? editor()->mapFrom(QPointF(m_pos)) : QPointF(m_pos), size);
+        }
+
+        int rotation = 0;
+        if (m_useRotation)
+            rotation = m_rotation;
+
+        // Draw the watermark
+        QPixmap image = (m_useColor ? m_coloredWatermark : m_watermark).scaled(size.toSize());
+        if (scaled)
+            painter->translate(crop.topLeft());
+        painter->setOpacity(m_opacity);
+        painter->setClipRect(QRectF(0, 0, crop.width(), crop.height()));
+        if (m_anchor != AnchorRepeated) {
+            const qreal width = size.width();
+            const qreal height = size.height();
+
+            qreal translatedX = (rect.x() + width / 2.0);
+            qreal translatedY = (rect.y() + height / 2.0);
+
+            if (m_useOffset) {
+                translatedX += m_offset.x();
+                translatedY += m_offset.y();
+            }
+
+            painter->translate(translatedX, translatedY);
+            painter->rotate(rotation);
+            painter->drawPixmap(QRectF(-width / 2.0, -height / 2.0, width, height), image, image.rect());
+        } else {
+            QBrush brush(image);
+            painter->setBrush(brush);
+            painter->setPen(Qt::NoPen);
+
+            const qreal width = crop.size().width() * 2.0;
+            const qreal height = crop.size().height() * 2.0;
+
+            qreal translatedX = crop.size().width() / 2.0;
+            qreal translatedY = crop.size().height() / 2.0;
+
+            if (m_useOffset) {
+                translatedX += m_offset.x();
+                translatedY += m_offset.y();
+            }
+
+            painter->translate(translatedX, translatedY);
+            painter->rotate(rotation);
+            painter->drawRect(QRectF(-translatedX * 2, -translatedY * 2, width, height));
+        }
     }
 }
 
