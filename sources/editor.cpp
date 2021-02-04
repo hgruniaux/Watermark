@@ -240,6 +240,8 @@ void Editor::scaleImage(qreal factor)
     m_croppingPreview->resize(m_imageLabel->size());
     m_watermarkPreview->resize(m_imageLabel->size());
     updateOverlaysPos();
+
+    emit zoomChanged(m_scaleFactor);
 }
 void Editor::adjustScrollBar(QScrollBar* scrollBar, qreal factor)
 {

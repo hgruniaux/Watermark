@@ -378,16 +378,27 @@ void MainWindow::initSignals()
     connect(ui->editor, &Editor::cropResized, ui->cropForm, &CropForm::setCropSize);
     connect(ui->editor, &Editor::cropMoved, ui->cropForm, &CropForm::setCropPosition);
     connect(ui->editor, &Editor::edited, ui->preview, QOverload<>::of(&QWidget::update));
-    connect(m_zoomSlider, &QSlider::valueChanged, [this](int value) { qreal val = value / 100.; ui->editor->zoom(val); });
+
+    connect(m_zoomSlider, &QSlider::valueChanged, [this](int value) {
+        ui->editor->blockSignals(true);
+        ui->editor->zoom(value / 100.0);
+        ui->editor->blockSignals(false);
+    });
+
+    connect(ui->editor, &Editor::zoomChanged, [this](qreal factor) {
+        m_zoomSlider->blockSignals(true);
+        m_zoomSlider->setValue(qRound(factor * 100.0));
+        m_zoomSlider->blockSignals(false);
+    });
 }
 void MainWindow::initZoomWidget()
 {
     QWidget* widget = new QWidget(ui->statusBar);
     QHBoxLayout* layout = new QHBoxLayout(widget);
     m_zoomSlider = new QSlider(Qt::Horizontal, widget);
-    m_zoomSlider->setMinimum(20);
-    m_zoomSlider->setMaximum(200);
-    m_zoomSlider->setValue(100);
+    m_zoomSlider->setMinimum(qRound(Editor::kMinZoomFactor * 100));
+    m_zoomSlider->setMaximum(qRound(Editor::kMaxZoomFactor * 100));
+    m_zoomSlider->setValue(qRound(ui->editor->scaleFactor() * 100.0));
     m_zoomSlider->setEnabled(false);
     layout->addSpacerItem(new QSpacerItem(40, 20, QSizePolicy::Expanding));
     layout->addWidget(m_zoomSlider);

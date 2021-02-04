@@ -53,6 +53,9 @@ public:
     QPointF mapFrom(const QPointF& point) const;
     QSizeF mapFrom(const QSizeF& point) const;
 
+    static constexpr qreal kMinZoomFactor = 0.333; // 33%
+    static constexpr qreal kMaxZoomFactor = 3.0; // 300%
+
     qreal scaleFactor() const { return m_scaleFactor; }
 
 public slots:
@@ -94,6 +97,8 @@ signals:
     void cropMoved(const QPoint& position);
     void cropEdited();
 
+    void zoomChanged(qreal factor);
+
 protected:
     virtual void wheelEvent(QWheelEvent* event) override;
 
@@ -109,9 +114,6 @@ private:
     void processWheelEvent(QWheelEvent* event);
 
 private:
-    static constexpr qreal kMinZoomFactor = 0.333; // 33%
-    static constexpr qreal kMaxZoomFactor = 3.0; // 300%
-
     QLabel* m_imageLabel;
     qreal m_scaleFactor = 1.0;
     QPixmap m_image;
