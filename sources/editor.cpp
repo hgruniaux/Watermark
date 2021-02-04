@@ -26,6 +26,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScrollBar>
+#include <QPainterPath>
 #include <QtMath>
 
 #include "editor.hpp"
@@ -329,8 +330,9 @@ CropEditor::CropEditor(QWidget* parent)
 void CropEditor::paintEvent(QPaintEvent*)
 {
     const QColor backgroundColor = QColor(0, 0, 0, 128);
-    const QColor borderColor = QColor(0xEE, 0xEE, 0xEE);
-    const QColor gridColor = QColor(0xCC, 0xCC, 0xCC);
+    const QColor handleColor = QColor(0xEE, 0xEE, 0xEE);
+    const QColor borderColor = QColor(0xEE, 0xEE, 0xEE, 128);
+    const QColor gridColor = QColor(0xEE, 0xEE, 0xEE, 128);
     const QColor textColor = QColor(0xFF, 0xFF, 0xFF);
 
     QPainter painter(this);
@@ -353,13 +355,13 @@ void CropEditor::paintEvent(QPaintEvent*)
 
     { // ===== Simple Border =====
         painter.setBrush(Qt::NoBrush);
-        painter.setPen(QPen(gridColor, 2));
+        painter.setPen(QPen(borderColor, 2));
         painter.drawRect(crop);
     }
 
     { // ===== Border =====
         painter.setBrush(Qt::NoBrush);
-        painter.setPen(QPen(borderColor, 3));
+        painter.setPen(QPen(handleColor, 3));
 
         const qreal length = qMin<qreal>(20, qMin(crop.width(), crop.height()));
         const qreal left = crop.x();
