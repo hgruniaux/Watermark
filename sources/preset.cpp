@@ -68,7 +68,7 @@ bool Preset::save(const QString& path, QString* error) const
 
     if (stream.status() != QDataStream::Ok) {
         if (error)
-            *error = "Internal error";
+            *error = QStringLiteral("Internal error");
         return false;
     }
 
@@ -82,7 +82,7 @@ bool Preset::load(const QString& path, QString* error)
     QDataStream stream(&file);
     if (!file.open(QFile::ReadOnly)) {
         if (error)
-            *error = QString("Could not open file");
+            *error = QStringLiteral("Could not open file");
         return false;
     }
 
@@ -93,13 +93,13 @@ bool Preset::load(const QString& path, QString* error)
     stream >> magicNumber;
     if (magicNumber != PresetManager::getMagicNumber()) {
         if (error)
-            *error = QString("Invalid magic number");
+            *error = QStringLiteral("Invalid magic number");
         return false;
     }
     stream >> version;
     if (version > PresetManager::getVersion()) {
         if (error)
-            *error = QString("Unsupported version");
+            *error = QStringLiteral("Unsupported version");
         return false;
     }
     stream >> qtVersion;
@@ -143,7 +143,7 @@ bool Preset::load(const QString& path, QString* error)
 
     if (stream.status() != QDataStream::Ok) {
         if (error)
-            *error = "Ill-formed preset file";
+            *error = QStringLiteral("Ill-formed preset file");
         return false;
     }
 
@@ -214,16 +214,16 @@ bool PresetManager::removePreset(const Preset& preset, QString* error)
         bool result = QFile::remove(file);
         if (!result) {
             if (error)
-                *error = QString("Failed to remove preset file");
+                *error = QStringLiteral("Failed to remove preset file");
             return false;
         } else {
             if (error)
-                *error = QString();
+                *error = {};
             return true;
         }
     } else {
         if (error)
-            *error = QString("Preset doesn't exists");
+            *error = QStringLiteral("Preset doesn't exists");
         return false;
     }
 }
