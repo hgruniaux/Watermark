@@ -113,7 +113,13 @@ void Editor::setImage(const QPixmap& image)
 
     emit edited();
 
-    qreal scaleFactor = width() / (qreal)image.size().width();
+    qreal scaleFactor;
+    if (image.size().width() > image.size().height()) {
+        scaleFactor = (width() * 0.75) / (qreal)image.size().width();
+    } else {
+        scaleFactor = (height() * 0.75) / (qreal)image.size().height();
+    }
+
     zoom(scaleFactor);
 }
 
