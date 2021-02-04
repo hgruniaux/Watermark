@@ -22,10 +22,10 @@
 // SOFTWARE.
 //
 
+#include <QDebug>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScrollBar>
-#include <QDebug>
 #include <QtMath>
 
 #include "editor.hpp"
@@ -402,37 +402,47 @@ void CropEditor::paintEvent(QPaintEvent*)
     }
 
     { // ===== Text =====
-        painter.save();
-        // Configuration
         painter.setBrush(Qt::NoBrush);
         painter.setPen(QPen(textColor, 1));
-        // Text
-        QString widthText = QString("%0 px").arg(m_crop.width());
-        QString heightText = QString("%0 px").arg(m_crop.height());
+
+        QString format = QStringLiteral("%0 px");
+        QString widthText = format.arg(m_crop.width());
+        QString heightText = format.arg(m_crop.height());
+
         // Points
-        QFontMetrics metrics(painter.font());
-        int padding = 0;
-        int widthTextWidth = metrics.horizontalAdvance(widthText);
-        int heightTextWidth = metrics.horizontalAdvance(heightText);
-        int textHeight = metrics.height();
-        double widthRadians = 12 * 2.0 * 3.141592654 / 12;
-        int widthX = crop.center().x() + qRound((crop.width() / 2) * qSin(widthRadians));
-        int widthY = crop.center().y() + qRound((-crop.height() / 2 - padding - textHeight) * qCos(widthRadians));
-        double heightRadians = 9 * 2.0 * 3.141592654 / 12;
-        int heightX = crop.center().x() + qRound((crop.width() / 2 + padding + textHeight) * qSin(heightRadians));
-        int heightY = crop.center().y() + qRound((-crop.height() / 2) * qCos(heightRadians));
-        // Drawing
+        QFontMetricsF metrics(painter.font());
+        qreal padding = 5; // Additional padding to use around width and height text (in pixels)
+        qreal widthY = crop.center().y() - crop.height() / 2.0;
+        qreal heightX = crop.center().x() - crop.width() / 2.0;
+
+        // We adjust the position of the text if it is outside the widget
+        // area so that it is always visible.
+        if (widthY < (metrics.height() + padding)) {
+            // Outside of the widget area
+            widthY += metrics.lineSpacing() + padding;
+        } else {
+            widthY -= metrics.lineSpacing() - metrics.ascent() + padding;
+        }
+
+        if (heightX < (metrics.height() + padding)) {
+            // Outside of the widget area
+            heightX += metrics.lineSpacing() + padding;
+        } else {
+            heightX -= metrics.lineSpacing() - metrics.ascent() + padding;
+        }
+
+        // Draw the crop width text
         QTransform t1;
-        t1.translate(widthX - widthTextWidth / 2, widthY);
-        t1.rotateRadians(widthRadians);
+        t1.translate(crop.center().x() - (metrics.horizontalAdvance(widthText) / 2), widthY);
         painter.setTransform(t1);
         painter.drawText(0, 0, widthText);
+
+        // Draw the crop height text
         QTransform t2;
-        t2.translate(heightX, heightY + heightTextWidth / 2);
-        t2.rotateRadians(heightRadians);
+        t2.translate(heightX, crop.center().y() + (metrics.horizontalAdvance(heightText) / 2));
+        t2.rotateRadians(-M_PI_2);
         painter.setTransform(t2);
         painter.drawText(0, 0, heightText);
-        painter.restore();
     }
 }
 void CropEditor::mousePressEvent(QMouseEvent* event)
