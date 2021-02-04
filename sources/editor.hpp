@@ -99,6 +99,17 @@ protected:
     virtual void wheelEvent(QWheelEvent* event) override;
 
 private:
+    // An ugly hack to allow wheel events to be handled by the Editor
+    // class even if it is received by the overlays (which should always
+    // be the case, because they are in front of the editor). Normally
+    // the Qt event propagation should permit to fix this problem, but
+    // i failed to get it to work properly.
+    // TODO: Fix this hack, and find a better solution
+    friend class CropEditor;
+    friend class WatermarkEditor;
+    void processWheelEvent(QWheelEvent* event);
+
+private:
     static constexpr qreal kMinZoomFactor = 0.333; // 33%
     static constexpr qreal kMaxZoomFactor = 3.0; // 300%
 
@@ -169,6 +180,7 @@ public slots:
 
 protected:
     virtual void paintEvent(QPaintEvent* event) override;
+    virtual void wheelEvent(QWheelEvent* event) override;
 
 private:
     friend class Editor;

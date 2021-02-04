@@ -115,13 +115,13 @@ void Editor::setImage(const QPixmap& image)
     m_watermarkPreview->m_crop = QRect(QPoint(0, 0), image.size());
     m_croppingPreview->m_crop = QRect(QPoint(0, 0), image.size());
 
-    qreal scaleFactor = width() / (qreal)image.size().width();
-    zoom(scaleFactor);
-
     m_watermarkPreview->setVisible(!image.isNull());
     m_croppingPreview->setVisible(!image.isNull());
 
     emit edited();
+
+    qreal scaleFactor = width() / (qreal)image.size().width();
+    zoom(scaleFactor);
 }
 
 void Editor::setCropRect(const QRect& rect)
@@ -278,6 +278,12 @@ void Editor::wheelEvent(QWheelEvent* event)
         zoomIn();
     else
         zoomOut();
+
+    QScrollArea::wheelEvent(event);
+}
+void Editor::processWheelEvent(QWheelEvent* event)
+{
+    wheelEvent(event);
 }
 
 // ========================================================
@@ -573,7 +579,7 @@ void CropEditor::mouseReleaseEvent(QMouseEvent*)
 }
 void CropEditor::wheelEvent(QWheelEvent* event)
 {
-    event->ignore();
+    editor()->processWheelEvent(event);
 }
 
 WatermarkAnchor CropEditor::resizeCorner(const QPoint& pos)
@@ -780,4 +786,8 @@ void WatermarkEditor::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
     drawWatermark(&painter);
+}
+void WatermarkEditor::wheelEvent(QWheelEvent* event)
+{
+    editor()->processWheelEvent(event);
 }
