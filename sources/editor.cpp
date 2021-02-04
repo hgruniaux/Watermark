@@ -407,13 +407,13 @@ void CropEditor::paintEvent(QPaintEvent*)
         painter.setBrush(Qt::NoBrush);
         painter.setPen(QPen(textColor, 1));
         // Text
-        QString width = QString("%0px").arg(m_crop.width());
-        QString height = QString("%0px").arg(m_crop.height());
+        QString widthText = QString("%0 px").arg(m_crop.width());
+        QString heightText = QString("%0 px").arg(m_crop.height());
         // Points
         QFontMetrics metrics(painter.font());
         int padding = 0;
-        int widthTextWidth = metrics.horizontalAdvance(width);
-        int heightTextWidth = metrics.horizontalAdvance(height);
+        int widthTextWidth = metrics.horizontalAdvance(widthText);
+        int heightTextWidth = metrics.horizontalAdvance(heightText);
         int textHeight = metrics.height();
         double widthRadians = 12 * 2.0 * 3.141592654 / 12;
         int widthX = crop.center().x() + qRound((crop.width() / 2) * qSin(widthRadians));
@@ -426,12 +426,12 @@ void CropEditor::paintEvent(QPaintEvent*)
         t1.translate(widthX - widthTextWidth / 2, widthY);
         t1.rotateRadians(widthRadians);
         painter.setTransform(t1);
-        painter.drawText(0, 0, width);
+        painter.drawText(0, 0, widthText);
         QTransform t2;
         t2.translate(heightX, heightY + heightTextWidth / 2);
         t2.rotateRadians(heightRadians);
         painter.setTransform(t2);
-        painter.drawText(0, 0, height);
+        painter.drawText(0, 0, heightText);
         painter.restore();
     }
 }
