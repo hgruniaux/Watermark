@@ -30,6 +30,31 @@
 
 #include "editor.hpp"
 
+class MoveResizeEventFilter : public QObject {
+public:
+    MoveResizeEventFilter(QObject* parent)
+        : QObject(parent)
+    {
+    }
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override
+    {
+        switch (event->type()) {
+        case QEvent::Resize:
+            static_cast<Editor*>(parent())->updateOverlaysSize();
+            break;
+        case QEvent::Move:
+            static_cast<Editor*>(parent())->updateOverlaysPos();
+            break;
+        default:
+            break;
+        }
+
+        return QObject::eventFilter(obj, event);
+    }
+};
+
 // ========================================================
 // class Editor
 // ========================================================
@@ -38,6 +63,8 @@ Editor::Editor(QWidget* parent)
     : QScrollArea(parent)
     , m_imageLabel(new QLabel(this))
 {
+    m_imageLabel->installEventFilter(new MoveResizeEventFilter(this));
+
     m_imageLabel->setBackgroundRole(QPalette::Base);
     m_imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
     m_imageLabel->setScaledContents(true);
@@ -56,9 +83,6 @@ Editor::Editor(QWidget* parent)
     setWatermarkOpacity(1.0);
     setWatermarkSize(1.0);
     setWatermarkAnchor(AnchorCenter);
-
-    connect(horizontalScrollBar(), &QScrollBar::valueChanged, this, &Editor::updateOverlaysPos);
-    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &Editor::updateOverlaysPos);
 }
 
 QPixmap Editor::generate() const
@@ -243,10 +267,6 @@ void Editor::scaleImage(qreal factor)
     adjustScrollBar(horizontalScrollBar(), factor);
     adjustScrollBar(verticalScrollBar(), factor);
 
-    m_croppingPreview->resize(m_imageLabel->size());
-    m_watermarkPreview->resize(m_imageLabel->size());
-    updateOverlaysPos();
-
     emit zoomChanged(m_scaleFactor);
 }
 void Editor::adjustScrollBar(QScrollBar* scrollBar, qreal factor)
@@ -264,6 +284,11 @@ void Editor::updateOverlaysPos()
 {
     m_croppingPreview->move(m_imageLabel->pos() + QPoint(1, 1));
     m_watermarkPreview->move(m_imageLabel->pos() + QPoint(1, 1));
+}
+void Editor::updateOverlaysSize()
+{
+    m_croppingPreview->resize(m_imageLabel->size());
+    m_watermarkPreview->resize(m_imageLabel->size());
 }
 
 void Editor::wheelEvent(QWheelEvent* event)

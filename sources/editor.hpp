@@ -113,6 +113,9 @@ private:
     friend class WatermarkEditor;
     void processWheelEvent(QWheelEvent* event);
 
+    friend class MoveResizeEventFilter;
+    void updateOverlaysSize();
+
 private:
     QLabel* m_imageLabel;
     qreal m_scaleFactor = 1.0;
