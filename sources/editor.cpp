@@ -256,8 +256,8 @@ QPointF Editor::mapFactor() const
 
 void Editor::updateOverlaysPos()
 {
-    m_croppingPreview->move(m_imageLabel->pos());
-    m_watermarkPreview->move(m_imageLabel->pos());
+    m_croppingPreview->move(m_imageLabel->pos() + QPoint(1, 1));
+    m_watermarkPreview->move(m_imageLabel->pos() + QPoint(1, 1));
 }
 
 void Editor::wheelEvent(QWheelEvent* event)
@@ -322,8 +322,8 @@ void CropEditor::paintEvent(QPaintEvent*)
 
     { // ===== Simple Border =====
         painter.setBrush(Qt::NoBrush);
-        painter.setPen(QPen(gridColor, 1));
-        painter.drawRect(crop.adjusted(0, 0, -1, -1));
+        painter.setPen(QPen(gridColor, 2));
+        painter.drawRect(crop);
     }
 
     { // ===== Border =====
