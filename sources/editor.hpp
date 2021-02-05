@@ -82,6 +82,9 @@ public slots:
     void normalSize();
     void fitToWindow(bool fit);
 
+signals:
+    void zoomChanged(qreal factor);
+
 private:
     void scaleImage(qreal factor);
     void adjustScrollBar(QScrollBar* scrollBar, qreal factor);
@@ -89,11 +92,6 @@ private:
 
 private slots:
     void updateOverlaysPos();
-
-signals:
-    void edited();
-
-    void zoomChanged(qreal factor);
 
 protected:
     virtual void wheelEvent(QWheelEvent* event) override;

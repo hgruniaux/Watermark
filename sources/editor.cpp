@@ -131,8 +131,6 @@ void Editor::setImage(const QPixmap& image)
     m_watermarkEditor->setVisible(!image.isNull());
     m_cropEditor->setVisible(!image.isNull());
 
-    emit edited();
-
     qreal scaleFactor;
     if (image.size().width() > image.size().height()) {
         scaleFactor = (width() * 0.75) / (qreal)image.size().width();
@@ -166,7 +164,6 @@ void Editor::updateWatermarkEditor()
 void Editor::setWatermarkImage(const QPixmap& image)
 {
     m_watermarkEditor->setWatermark(image);
-    emit edited();
 }
 
 void Editor::zoom(qreal factor)

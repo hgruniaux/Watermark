@@ -37,8 +37,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>470</width>
-         <height>283</height>
+         <width>453</width>
+         <height>295</height>
         </rect>
        </property>
       </widget>
@@ -52,7 +52,7 @@
      <x>0</x>
      <y>0</y>
      <width>521</width>
-     <height>29</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -115,35 +115,6 @@
    </attribute>
    <widget class="WatermarkForm" name="watermarkForm"/>
   </widget>
-  <widget class="QDockWidget" name="dockWidgetPreview">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="windowIcon">
-    <iconset>
-     <normaloff>:/icons/48px/preview</normaloff>:/icons/48px/preview</iconset>
-   </property>
-   <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
-   </property>
-   <property name="windowTitle">
-    <string>Pre&amp;view</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="Preview" name="preview">
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-   </widget>
-  </widget>
   <widget class="QDockWidget" name="dockWidgetCrop">
    <property name="windowIcon">
     <iconset>
@@ -162,7 +133,8 @@
   </widget>
   <action name="actionExit">
    <property name="icon">
-    <iconset theme="application-exit"/>
+    <iconset theme="application-exit">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Exit</string>
@@ -170,7 +142,8 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset theme="document-save"/>
+    <iconset theme="document-save">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -181,7 +154,8 @@
   </action>
   <action name="actionSaveAs">
    <property name="icon">
-    <iconset theme="document-save-as"/>
+    <iconset theme="document-save-as">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Save &amp;as...</string>
@@ -192,7 +166,8 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset theme="settings"/>
+    <iconset theme="settings">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Sett&amp;ings</string>
@@ -221,7 +196,8 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset theme="help-about"/>
+    <iconset theme="help-about">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -235,7 +211,8 @@
   </action>
   <action name="actionReportIssue">
    <property name="icon">
-    <iconset theme="bug"/>
+    <iconset theme="bug">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Report &amp;issue</string>
@@ -246,7 +223,8 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset theme="document-open"/>
+    <iconset theme="document-open">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Open</string>
@@ -262,7 +240,8 @@
   </action>
   <action name="actionSaveFinish">
    <property name="icon">
-    <iconset theme="document-save"/>
+    <iconset theme="document-save">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Save &amp;finish</string>
@@ -285,7 +264,8 @@
   </action>
   <action name="actionAboutQt">
    <property name="icon">
-    <iconset theme="qt"/>
+    <iconset theme="qt">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>About Qt</string>
@@ -313,12 +293,6 @@
    <class>Editor</class>
    <extends>QWidget</extends>
    <header>editor.hpp</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Preview</class>
-   <extends>QWidget</extends>
-   <header>preview.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

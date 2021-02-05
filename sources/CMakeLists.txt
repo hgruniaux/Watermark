@@ -6,7 +6,6 @@ set(HEADERS
     "editor.hpp"
     "mainwindow.hpp"
     "preset.hpp"
-    "preview.hpp"
     "reportissuedialog.hpp"
     "watermark.hpp"
     "watermarkform.hpp")
@@ -17,7 +16,6 @@ set(SOURCES
     "main.cpp"
     "mainwindow.cpp"
     "preset.cpp"
-    "preview.cpp"
     "reportissuedialog.cpp"
     "watermark.cpp"
     "watermarkform.cpp")

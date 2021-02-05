@@ -68,10 +68,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     setAcceptDrops(true);
 
-    ui->preview->setEditor(ui->editor);
     ui->menuSavedPreset->removeAction(ui->action_4);
-
-    ui->dockWidgetPreview->hide();
 }
 MainWindow::~MainWindow()
 {
@@ -368,7 +365,6 @@ void MainWindow::initSignals()
     connect(ui->watermarkForm, &WatermarkForm::watermarkImageChanged, ui->editor, &Editor::setWatermarkImage);
     connect(ui->watermarkForm, &WatermarkForm::watermarkEdited, ui->editor, &Editor::updateWatermarkEditor);
     connect(ui->cropForm, &CropForm::cropRectEdited, ui->editor, &Editor::updateEditors);
-    connect(ui->editor, &Editor::edited, ui->preview, QOverload<>::of(&QWidget::update));
 
     connect(m_zoomSlider, &QSlider::valueChanged, [this](int value) {
         ui->editor->blockSignals(true);
