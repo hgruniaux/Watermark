@@ -33,6 +33,9 @@
 class CropEditor;
 class WatermarkEditor;
 
+class CropForm;
+class WatermarkForm;
+
 // ========================================================
 // class Editor
 // ========================================================
@@ -41,8 +44,7 @@ class Editor : public QScrollArea {
     Q_OBJECT
 
 public:
-    explicit Editor(QWidget* parent = nullptr);
-    virtual ~Editor() override { }
+    Editor(QWidget* parent = nullptr);
 
     QPixmap generate() const;
 
@@ -61,21 +63,18 @@ public:
 public slots:
     void setImage(const QPixmap& image);
 
-    void setCropRect(const QRect& rect);
-    void setCropSize(const QSize& size);
-    void setCropPosition(const QPoint& pos);
+    void setCropForm(CropForm* form);
+    void setWatermarkForm(WatermarkForm* form);
+
+    // Requests an update of the both crop editor and watermark editor.
+    // Call this function only if the crop rectangle was updated.
+    void updateEditors();
+    // Requests an update only for the watermark editor. Call this function
+    // if the crop editor is not needed to be updated (for example if the
+    // crop rectangle was not updated).
+    void updateWatermarkEditor();
 
     void setWatermarkImage(const QPixmap& image);
-    void setWatermarkAnchor(WatermarkAnchor anchor);
-    void setWatermarkOpacity(qreal opacity);
-    void setWatermarkUseSize(bool use);
-    void setWatermarkSize(qreal size);
-    void setWatermarkUseRotation(bool use);
-    void setWatermarkRotation(int angle);
-    void setWatermarkUseColor(bool use);
-    void setWatermarkColor(const QColor& color);
-    void setWatermarkUseOffset(bool use);
-    void setWatermarkOffset(const QPoint& offset);
 
     void zoom(qreal factor);
     void zoomIn();
@@ -93,9 +92,6 @@ private slots:
 
 signals:
     void edited();
-    void cropResized(const QSize& size);
-    void cropMoved(const QPoint& position);
-    void cropEdited();
 
     void zoomChanged(qreal factor);
 
@@ -120,8 +116,8 @@ private:
     QLabel* m_imageLabel;
     qreal m_scaleFactor = 1.0;
     QPixmap m_image;
-    CropEditor* m_croppingPreview;
-    WatermarkEditor* m_watermarkPreview;
+    CropEditor* m_cropEditor;
+    WatermarkEditor* m_watermarkEditor;
 }; // class Editor
 
 // ========================================================
@@ -130,16 +126,14 @@ private:
 
 class CropEditor : public QWidget {
     Q_OBJECT
+
 public:
-    explicit CropEditor(QWidget* parent = nullptr);
-    virtual ~CropEditor() override { }
+    CropEditor(Editor* parent);
 
-    Editor* editor() const { return static_cast<Editor*>(parent()); }
+    inline Editor* editor() const { return static_cast<Editor*>(parent()); }
 
-signals:
-    void cropResized(const QSize& size);
-    void cropMoved(const QPoint& position);
-    void cropEdited();
+    inline CropForm* cropForm() const { return m_cropForm; }
+    inline void setCropForm(CropForm* form) { m_cropForm = form; }
 
 protected:
     virtual void paintEvent(QPaintEvent* event) override;
@@ -152,14 +146,11 @@ private:
     WatermarkAnchor resizeCorner(const QPoint& pos);
 
 private:
-    friend class Editor;
-
-private:
-    bool m_dragging;
-    bool m_resizing;
-    QRect m_crop;
+    CropForm* m_cropForm;
     QPoint m_dragOrigin;
     WatermarkAnchor m_resizingCorner;
+    bool m_isDragging;
+    bool m_isResizing;
 }; // class CropEditor
 
 // ========================================================
@@ -168,43 +159,38 @@ private:
 
 class WatermarkEditor : public QWidget {
     Q_OBJECT
-public:
-    explicit WatermarkEditor(QWidget* parent = nullptr);
-    virtual ~WatermarkEditor() override { }
 
-    Editor* editor() const { return static_cast<Editor*>(parent()); }
+public:
+    WatermarkEditor(Editor* parent);
+
+    inline Editor* editor() const { return static_cast<Editor*>(parent()); }
+
+    inline void setCropForm(CropForm* form) { m_cropForm = form; }
+    inline void setWatermarkForm(WatermarkForm* form) { m_watermarkForm = form; }
+
     void drawWatermark(QPainter* painter, bool scaled = true);
 
 public slots:
     void updatePosition();
-    void setCrop(const QRect& crop);
     void setWatermark(const QPixmap& pixmap);
-    void setColor(const QColor& color);
-    void setUseColor(bool colorize);
 
 protected:
     virtual void paintEvent(QPaintEvent* event) override;
     virtual void wheelEvent(QWheelEvent* event) override;
 
 private:
-    friend class Editor;
+    void computeColoredWatermark(const QColor& color);
 
 private:
-    QRect m_crop;
-    WatermarkAnchor m_anchor = AnchorCenter;
-    QPoint m_pos;
-    QPixmap m_watermark;
-    QPixmap m_coloredWatermark;
+    CropForm* m_cropForm;
+    WatermarkForm* m_watermarkForm;
 
-    qreal m_opacity = 1.0;
-    bool m_useSize = false;
-    qreal m_size = 1.0;
-    bool m_useRotation = false;
-    int m_rotation = 0;
-    QColor m_color = QColor(0, 0, 0, 128);
-    bool m_useColor = false;
-    QPoint m_offset;
-    bool m_useOffset = false;
+    QPoint m_cachedWatermarkPos;
+    QPixmap m_watermark;
+
+    bool m_hasCachedColoredWatermark;
+    QColor m_cachedWatermarkColor;
+    QPixmap m_coloredWatermark;
 }; // class WatermarkEditor
 
 #endif // EDITOR_HPP

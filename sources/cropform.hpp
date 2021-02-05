@@ -46,9 +46,7 @@ public:
     QRect cropRect() const { return m_crop; }
 
 signals:
-    void cropEdited(const QRect& crop);
-    void cropResized(const QSize& size);
-    void cropMoved(const QPoint& pos);
+    void cropRectEdited();
 
 public slots:
     void setImageRect(const QRect& rect);

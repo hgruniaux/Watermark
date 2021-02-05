@@ -76,16 +76,7 @@ public slots:
 
 signals:
     void watermarkImageChanged(const QPixmap& image);
-    void watermarkPositionChanged(WatermarkAnchor pos);
-    void watermarkOpacityChanged(qreal opacity);
-    void watermarkUseSizeToggled(bool use);
-    void watermarkSizeChanged(qreal size);
-    void watermarkUseRotationToggled(bool use);
-    void watermarkRotationChanged(int angle);
-    void watermarkUseColorToggled(bool use);
-    void watermarkColorChanged(const QColor& color);
-    void watermarkUseOffsetToggled(bool use);
-    void watermarkOffsetChanged(const QPoint& offset);
+    void watermarkEdited();
 
 private slots:
     void pickColor();

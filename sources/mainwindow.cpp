@@ -53,6 +53,9 @@ MainWindow::MainWindow(QWidget* parent)
     WatermarkManager::makeDirectory();
 
     ui->setupUi(this);
+    ui->editor->setCropForm(ui->cropForm);
+    ui->editor->setWatermarkForm(ui->watermarkForm);
+
     initActions();
     initZoomWidget();
     initSignals();
@@ -363,20 +366,8 @@ void MainWindow::initActions()
 void MainWindow::initSignals()
 {
     connect(ui->watermarkForm, &WatermarkForm::watermarkImageChanged, ui->editor, &Editor::setWatermarkImage);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkPositionChanged, ui->editor, &Editor::setWatermarkAnchor);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkOpacityChanged, ui->editor, &Editor::setWatermarkOpacity);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkUseSizeToggled, ui->editor, &Editor::setWatermarkUseSize);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkSizeChanged, ui->editor, &Editor::setWatermarkSize);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkUseRotationToggled, ui->editor, &Editor::setWatermarkUseRotation);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkRotationChanged, ui->editor, &Editor::setWatermarkRotation);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkUseColorToggled, ui->editor, &Editor::setWatermarkUseColor);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkColorChanged, ui->editor, &Editor::setWatermarkColor);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkUseOffsetToggled, ui->editor, &Editor::setWatermarkUseOffset);
-    connect(ui->watermarkForm, &WatermarkForm::watermarkOffsetChanged, ui->editor, &Editor::setWatermarkOffset);
-    connect(ui->cropForm, &CropForm::cropResized, ui->editor, &Editor::setCropSize);
-    connect(ui->cropForm, &CropForm::cropMoved, ui->editor, &Editor::setCropPosition);
-    connect(ui->editor, &Editor::cropResized, ui->cropForm, &CropForm::setCropSize);
-    connect(ui->editor, &Editor::cropMoved, ui->cropForm, &CropForm::setCropPosition);
+    connect(ui->watermarkForm, &WatermarkForm::watermarkEdited, ui->editor, &Editor::updateWatermarkEditor);
+    connect(ui->cropForm, &CropForm::cropRectEdited, ui->editor, &Editor::updateEditors);
     connect(ui->editor, &Editor::edited, ui->preview, QOverload<>::of(&QWidget::update));
 
     connect(m_zoomSlider, &QSlider::valueChanged, [this](int value) {

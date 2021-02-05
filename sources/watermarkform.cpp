@@ -48,6 +48,8 @@ WatermarkForm::WatermarkForm(QWidget* parent)
     ui->yOffsetSpinBox->setMinimum(INT_MIN);
     ui->yOffsetSpinBox->setMaximum(INT_MAX);
 
+    setWatermarkAnchor(AnchorCenter);
+
     initSignals();
     loadWatermarks();
     updateColor(QColor());
@@ -139,7 +141,7 @@ bool WatermarkForm::watermarkUseRotation() const
 }
 int WatermarkForm::watermarkRotation() const
 {
-    return ui->rotationSpinBox->value();
+    return 359 - ui->rotationSpinBox->value();
 }
 bool WatermarkForm::watermarkUseColor() const
 {
@@ -255,7 +257,7 @@ void WatermarkForm::updateColor(const QColor& color)
     c.setAlphaF(ui->colorOpacitySlider->value() / 100.);
     m_color = c;
     ui->colorPushButton->setStyleSheet(QString("background: %0").arg(c.name(QColor::HexRgb)));
-    emit watermarkColorChanged(c);
+    emit watermarkEdited();
 }
 
 void WatermarkForm::initSignals()
@@ -283,46 +285,42 @@ void WatermarkForm::initSignals()
     connect(ui->opacitySlider, &QSlider::valueChanged, ui->opacitySpinBox, &QSpinBox::setValue);
     connect(ui->opacitySpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         ui->opacitySlider->setValue(value);
-        emit watermarkOpacityChanged(value / 100.);
+        emit watermarkEdited();
     });
 
     // "Size" category
     connect(ui->sizeGroupBox, &QGroupBox::toggled, [this](bool use) {
-        emit watermarkUseSizeToggled(use);
+        emit watermarkEdited();
     });
     connect(ui->sizeSlider, &QSlider::valueChanged, ui->sizeSpinBox, &QSpinBox::setValue);
     connect(ui->sizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         ui->sizeSlider->setValue(value);
-        emit watermarkSizeChanged(value / 100.);
+        emit watermarkEdited();
     });
 
     // "Rotation" category
     connect(ui->rotationGroupBox, &QGroupBox::toggled, [this](bool use) {
-        emit watermarkUseRotationToggled(use);
+        emit watermarkEdited();
     });
     connect(ui->rotationDial, &QDial::valueChanged, [this](int value) {
         ui->rotationSpinBox->blockSignals(true);
-        qDebug("%d", value);
         if (value < 270) {
             ui->rotationSpinBox->setValue(359 - (90 + qAbs(value)));
         } else {
             ui->rotationSpinBox->setValue(359 - (value - 270));
         }
         ui->rotationSpinBox->blockSignals(false);
-        emit watermarkRotationChanged(359 - ui->rotationSpinBox->value());
+        emit watermarkEdited();
     });
     connect(ui->rotationSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         ui->rotationDial->blockSignals(true);
         ui->rotationDial->setValue((359 - value) + 270);
         ui->rotationDial->blockSignals(false);
-        emit watermarkRotationChanged(359 - value);
+        emit watermarkEdited();
     });
 
     // "Color" category
-    connect(ui->colorGroupBox, &QGroupBox::toggled, [this](bool use) {
-        emit watermarkUseColorToggled(use);
-        emit watermarkColorChanged(m_color);
-    });
+    connect(ui->colorGroupBox, &QGroupBox::toggled, [this]() { emit WatermarkForm::watermarkEdited(); });
     connect(ui->colorOpacitySlider, &QSlider::valueChanged, ui->colorOpacitySpinBox, &QSpinBox::setValue);
     connect(ui->colorOpacitySpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         ui->colorOpacitySlider->setValue(value);
@@ -331,31 +329,28 @@ void WatermarkForm::initSignals()
     connect(ui->colorPushButton, &QPushButton::clicked, this, &WatermarkForm::pickColor);
 
     // "Offset" category
-    connect(ui->offsetGroupBox, &QGroupBox::toggled, [this](bool use) {
-        emit watermarkUseOffsetToggled(use);
-    });
-    connect(ui->xOffsetSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int x) {
-        emit watermarkOffsetChanged(QPoint(x, ui->yOffsetSpinBox->value()));
-    });
-    connect(ui->yOffsetSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int y) {
-        emit watermarkOffsetChanged(QPoint(ui->xOffsetSpinBox->value(), y));
-    });
+    connect(ui->offsetGroupBox, &QGroupBox::toggled, [this]() { emit WatermarkForm::watermarkEdited(); });
+    connect(ui->xOffsetSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this]() { emit WatermarkForm::watermarkEdited(); });
+    connect(ui->yOffsetSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [this]() { emit WatermarkForm::watermarkEdited(); });
 
     connect(ui->buttonAdd, &QPushButton::clicked, this, QOverload<>::of(&WatermarkForm::addWatermark));
     connect(ui->buttonRemove, &QPushButton::clicked, this, &WatermarkForm::removeWatermark);
 
-    connect(ui->comboPosition, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int i) { emit watermarkPositionChanged(static_cast<WatermarkAnchor>(i)); });
-    connect(ui->radioTopLeft, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorTopLeft); });
-    connect(ui->radioTop, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorTop); });
-    connect(ui->radioTopRight, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorTopRight); });
-    connect(ui->radioLeft, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorLeft); });
-    connect(ui->radioCenter, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorCenter); });
-    connect(ui->radioRight, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorRight); });
-    connect(ui->radioBottomLeft, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorBottomLeft); });
-    connect(ui->radioBottom, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorBottom); });
-    connect(ui->radioBottomRight, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorBottomRight); });
-    connect(ui->radioRepeated, &QRadioButton::toggled, [this](bool c) { if (c) emit watermarkPositionChanged(AnchorRepeated); });
-    connect(this, &WatermarkForm::watermarkPositionChanged, [this](WatermarkAnchor anchor) { setWatermarkAnchor(anchor); });
+    connect(ui->radioTopLeft, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorTopLeft); });
+    connect(ui->radioTop, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorTop); });
+    connect(ui->radioTopRight, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorTopRight);; });
+    connect(ui->radioLeft, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorLeft); });
+    connect(ui->radioCenter, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorCenter); });
+    connect(ui->radioRight, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorRight); });
+    connect(ui->radioBottomLeft, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorBottomLeft); });
+    connect(ui->radioBottom, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorBottom); });
+    connect(ui->radioBottomRight, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorBottomRight); });
+    connect(ui->radioRepeated, &QRadioButton::toggled, [this](bool c) { if(c) ui->comboPosition->setCurrentIndex(AnchorRepeated); });
+
+    connect(ui->comboPosition, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() {
+        setWatermarkAnchor((WatermarkAnchor)ui->comboPosition->currentIndex());
+        emit WatermarkForm::watermarkEdited();
+    });
 }
 void WatermarkForm::loadWatermarks()
 {

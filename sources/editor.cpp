@@ -25,11 +25,15 @@
 #include <QDebug>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QScrollBar>
 #include <QPainterPath>
+#include <QScrollBar>
 #include <QtMath>
 
+#include <QDebug>
+
+#include "cropform.hpp"
 #include "editor.hpp"
+#include "watermarkform.hpp"
 
 class MoveResizeEventFilter : public QObject {
 public:
@@ -75,15 +79,8 @@ Editor::Editor(QWidget* parent)
     setWidget(m_imageLabel);
 
     m_image = QPixmap();
-    m_watermarkPreview = new WatermarkEditor(this);
-    m_croppingPreview = new CropEditor(this);
-    connect(m_croppingPreview, &CropEditor::cropResized, this, &Editor::cropResized);
-    connect(m_croppingPreview, &CropEditor::cropMoved, this, &Editor::cropMoved);
-    connect(m_croppingPreview, &CropEditor::cropEdited, this, &Editor::cropEdited);
-    connect(m_croppingPreview, &CropEditor::cropEdited, [this]() { m_watermarkPreview->setCrop(m_croppingPreview->m_crop); emit edited(); });
-    setWatermarkOpacity(1.0);
-    setWatermarkSize(1.0);
-    setWatermarkAnchor(AnchorCenter);
+    m_watermarkEditor = new WatermarkEditor(this);
+    m_cropEditor = new CropEditor(this);
 }
 
 QPixmap Editor::generate() const
@@ -91,10 +88,10 @@ QPixmap Editor::generate() const
     if (m_image.isNull()) {
         return QPixmap();
     } else {
-        QRect crop = m_croppingPreview->m_crop;
+        QRect crop = m_cropEditor->cropForm()->cropRect();
         QPixmap result = m_image.copy(crop);
         QPainter painter(&result);
-        m_watermarkPreview->drawWatermark(&painter, false);
+        m_watermarkEditor->drawWatermark(&painter, false);
         return result;
     }
 }
@@ -130,11 +127,9 @@ void Editor::setImage(const QPixmap& image)
     m_imageLabel->setPixmap(image);
 
     m_image = image;
-    m_watermarkPreview->m_crop = QRect(QPoint(0, 0), image.size());
-    m_croppingPreview->m_crop = QRect(QPoint(0, 0), image.size());
 
-    m_watermarkPreview->setVisible(!image.isNull());
-    m_croppingPreview->setVisible(!image.isNull());
+    m_watermarkEditor->setVisible(!image.isNull());
+    m_cropEditor->setVisible(!image.isNull());
 
     emit edited();
 
@@ -148,85 +143,29 @@ void Editor::setImage(const QPixmap& image)
     zoom(scaleFactor);
 }
 
-void Editor::setCropRect(const QRect& rect)
+void Editor::setCropForm(CropForm* form)
 {
-    m_croppingPreview->m_crop = rect;
-    m_watermarkPreview->m_crop = rect;
-    m_croppingPreview->update();
-    m_watermarkPreview->update();
-    emit edited();
+    m_cropEditor->setCropForm(form);
+    m_watermarkEditor->setCropForm(form);
 }
-void Editor::setCropSize(const QSize& size)
+void Editor::setWatermarkForm(WatermarkForm* form)
 {
-    setCropRect(QRect(m_croppingPreview->m_crop.topLeft(), size));
+    m_watermarkEditor->setWatermarkForm(form);
 }
-void Editor::setCropPosition(const QPoint& pos)
+
+void Editor::updateEditors()
 {
-    setCropRect(QRect(pos, m_croppingPreview->m_crop.size()));
+    m_cropEditor->update();
+    m_watermarkEditor->update();
+}
+void Editor::updateWatermarkEditor()
+{
+    m_watermarkEditor->update();
 }
 
 void Editor::setWatermarkImage(const QPixmap& image)
 {
-    m_watermarkPreview->setWatermark(image);
-    emit edited();
-}
-void Editor::setWatermarkAnchor(WatermarkAnchor anchor)
-{
-    m_watermarkPreview->m_anchor = anchor;
-    m_watermarkPreview->updatePosition();
-    m_watermarkPreview->update();
-    emit edited();
-}
-void Editor::setWatermarkOpacity(qreal opacity)
-{
-    m_watermarkPreview->m_opacity = opacity;
-    m_watermarkPreview->update();
-    emit edited();
-}
-void Editor::setWatermarkUseSize(bool use)
-{
-    m_watermarkPreview->m_useSize = use;
-    m_watermarkPreview->update();
-    emit edited();
-}
-void Editor::setWatermarkSize(qreal size)
-{
-    m_watermarkPreview->m_size = size;
-    m_watermarkPreview->update();
-    emit edited();
-}
-void Editor::setWatermarkUseRotation(bool use)
-{
-    m_watermarkPreview->m_useRotation = use;
-    m_watermarkPreview->update();
-    emit edited();
-}
-void Editor::setWatermarkRotation(int angle)
-{
-    m_watermarkPreview->m_rotation = angle;
-    m_watermarkPreview->update();
-    emit edited();
-}
-void Editor::setWatermarkUseColor(bool use)
-{
-    m_watermarkPreview->setUseColor(use);
-    emit edited();
-}
-void Editor::setWatermarkColor(const QColor& color)
-{
-    m_watermarkPreview->setColor(color);
-    emit edited();
-}
-void Editor::setWatermarkUseOffset(bool use)
-{
-    m_watermarkPreview->m_useOffset = use;
-    m_watermarkPreview->update();
-    emit edited();
-}
-void Editor::setWatermarkOffset(const QPoint& offset)
-{
-    m_watermarkPreview->m_offset = offset;
-    m_watermarkPreview->update();
+    m_watermarkEditor->setWatermark(image);
     emit edited();
 }
 
@@ -283,13 +222,13 @@ QPointF Editor::mapFactor() const
 
 void Editor::updateOverlaysPos()
 {
-    m_croppingPreview->move(m_imageLabel->pos() + QPoint(1, 1));
-    m_watermarkPreview->move(m_imageLabel->pos() + QPoint(1, 1));
+    m_cropEditor->move(m_imageLabel->pos() + QPoint(1, 1));
+    m_watermarkEditor->move(m_imageLabel->pos() + QPoint(1, 1));
 }
 void Editor::updateOverlaysSize()
 {
-    m_croppingPreview->resize(m_imageLabel->size());
-    m_watermarkPreview->resize(m_imageLabel->size());
+    m_cropEditor->resize(m_imageLabel->size());
+    m_watermarkEditor->resize(m_imageLabel->size());
 }
 
 void Editor::wheelEvent(QWheelEvent* event)
@@ -317,13 +256,13 @@ void Editor::processWheelEvent(QWheelEvent* event)
 // class CropEditor
 // ========================================================
 
-CropEditor::CropEditor(QWidget* parent)
+CropEditor::CropEditor(Editor* parent)
     : QWidget(parent)
+    , m_cropForm(nullptr)
+    , m_isDragging(false)
+    , m_isResizing(false)
+    , m_dragOrigin()
 {
-    m_dragging = false;
-    m_resizing = false;
-    m_crop = QRect(0, 0, 100, 100);
-    m_dragOrigin = QPoint();
     setMouseTracking(true);
 }
 
@@ -336,7 +275,7 @@ void CropEditor::paintEvent(QPaintEvent*)
     const QColor textColor = QColor(0xFF, 0xFF, 0xFF);
 
     QPainter painter(this);
-    QRectF crop = editor()->mapFrom(QRectF(m_crop));
+    QRectF crop = editor()->mapFrom(QRectF(m_cropForm->cropRect()));
 
     { // ===== Background =====
         painter.setBrush(backgroundColor);
@@ -423,8 +362,9 @@ void CropEditor::paintEvent(QPaintEvent*)
         painter.setPen(QPen(textColor, 1));
 
         QString format = QStringLiteral("%0 px");
-        QString widthText = format.arg(m_crop.width());
-        QString heightText = format.arg(m_crop.height());
+        QSize cropSize = m_cropForm->cropRect().size();
+        QString widthText = format.arg(cropSize.width());
+        QString heightText = format.arg(cropSize.height());
 
         QFontMetricsF metrics(painter.font());
         const qreal padding = 5; // Additional padding to use around width and height text (in pixels)
@@ -473,14 +413,14 @@ void CropEditor::mousePressEvent(QMouseEvent* event)
     case AnchorRight:
     case AnchorTop:
     case AnchorBottom:
-        m_resizing = true;
+        m_isResizing = true;
         m_resizingCorner = corner;
         break;
     default: {
-        const QRect crop = editor()->mapFrom(m_crop);
+        const QRect crop = editor()->mapFrom(m_cropForm->cropRect());
         if (crop.contains(event->pos())) {
             setCursor(Qt::ClosedHandCursor);
-            m_dragging = true;
+            m_isDragging = true;
             m_dragOrigin = editor()->mapTo(event->pos() - crop.topLeft());
         }
     } break;
@@ -488,89 +428,82 @@ void CropEditor::mousePressEvent(QMouseEvent* event)
 }
 void CropEditor::mouseMoveEvent(QMouseEvent* event)
 {
+    QRect cropRect = m_cropForm->cropRect();
     QSize size = editor()->imageSize();
-    if (m_dragging) {
+    if (m_isDragging) {
         QPoint temp = editor()->mapTo(event->pos()) - m_dragOrigin;
-        QPoint pos = QPoint(qBound(0, (size.width() - m_crop.width()), temp.x()),
-            qBound(0, (size.height() - m_crop.height()), temp.y()));
-        m_crop.moveTo(pos);
-        emit cropMoved(pos);
-        emit cropEdited();
-        update();
-    } else if (m_resizing) {
-        QRect rect = m_crop;
-        QPoint tl = rect.topLeft();
-        QPoint br = rect.bottomRight();
+        QPoint pos = QPoint(qBound(0, (size.width() - cropRect.width()), temp.x()),
+            qBound(0, (size.height() - cropRect.height()), temp.y()));
+        cropRect.moveTo(pos);
+        m_cropForm->setCropRect(cropRect);
+    } else if (m_isResizing) {
+        QPoint tl = cropRect.topLeft();
+        QPoint br = cropRect.bottomRight();
         QPoint pos = editor()->mapTo(event->pos());
         pos = QPoint(qBound(0, pos.x(), size.width() - 1), qBound(0, pos.y(), size.height() - 1));
 
         switch (m_resizingCorner) {
         case AnchorTopLeft:
-            m_crop.setTopLeft(QPoint(qMin(pos.x(), br.x()), qMin(pos.y(), br.y())));
+            cropRect.setTopLeft(QPoint(qMin(pos.x(), br.x()), qMin(pos.y(), br.y())));
             break;
         case AnchorTopRight:
-            m_crop.setTopRight(QPoint(qMax(pos.x(), tl.x()), qMin(pos.y(), br.y())));
+            cropRect.setTopRight(QPoint(qMax(pos.x(), tl.x()), qMin(pos.y(), br.y())));
             break;
         case AnchorBottomLeft:
-            m_crop.setBottomLeft(QPoint(qMin(pos.x(), br.x()), qMax(pos.y(), tl.y())));
+            cropRect.setBottomLeft(QPoint(qMin(pos.x(), br.x()), qMax(pos.y(), tl.y())));
             break;
         case AnchorBottomRight:
-            m_crop.setBottomRight(QPoint(qMax(pos.x(), tl.x()), qMax(pos.y(), tl.y())));
+            cropRect.setBottomRight(QPoint(qMax(pos.x(), tl.x()), qMax(pos.y(), tl.y())));
             break;
         case AnchorTop:
-            m_crop.setTop(qMin(pos.y(), br.y()));
+            cropRect.setTop(qMin(pos.y(), br.y()));
             break;
         case AnchorBottom:
-            m_crop.setBottom(qMax(pos.y(), tl.y()));
+            cropRect.setBottom(qMax(pos.y(), tl.y()));
             break;
         case AnchorLeft:
-            m_crop.setLeft(qMin(pos.x(), br.x()));
+            cropRect.setLeft(qMin(pos.x(), br.x()));
             break;
         case AnchorRight:
-            m_crop.setRight(qMax(pos.x(), tl.x()));
+            cropRect.setRight(qMax(pos.x(), tl.x()));
             break;
         default:
             break;
         }
-
-        emit cropResized(m_crop.size());
 
         switch (m_resizingCorner) {
         case AnchorTopLeft:
-            m_crop.moveBottomRight(rect.bottomRight());
+            cropRect.moveBottomRight(cropRect.bottomRight());
             break;
         case AnchorTopRight:
-            m_crop.moveBottomLeft(rect.bottomLeft());
+            cropRect.moveBottomLeft(cropRect.bottomLeft());
             break;
         case AnchorBottomLeft:
-            m_crop.moveTopRight(rect.topRight());
+            cropRect.moveTopRight(cropRect.topRight());
             break;
         case AnchorBottomRight:
-            m_crop.moveTopLeft(rect.topLeft());
+            cropRect.moveTopLeft(cropRect.topLeft());
             break;
         case AnchorTop:
-            m_crop.moveBottom(rect.bottom());
+            cropRect.moveBottom(cropRect.bottom());
             break;
         case AnchorBottom:
-            m_crop.moveTop(rect.top());
+            cropRect.moveTop(cropRect.top());
             break;
         case AnchorLeft:
-            m_crop.moveRight(rect.right());
+            cropRect.moveRight(cropRect.right());
             break;
         case AnchorRight:
-            m_crop.moveLeft(rect.left());
+            cropRect.moveLeft(cropRect.left());
             break;
         default:
             break;
         }
 
-        m_crop.setWidth(qMin(m_crop.width(), size.width() - m_crop.x()));
-        m_crop.setHeight(qMin(m_crop.height(), size.height() - m_crop.y()));
+        cropRect.setWidth(qMin(cropRect.width(), size.width() - cropRect.x()));
+        cropRect.setHeight(qMin(cropRect.height(), size.height() - cropRect.y()));
 
-        emit cropResized(m_crop.size());
-        emit cropMoved(m_crop.topLeft());
-        emit cropEdited();
-
+        m_cropForm->setCropRect(cropRect);
         update();
     } else {
         auto anchor = resizeCorner(event->pos());
@@ -600,8 +533,8 @@ void CropEditor::mouseMoveEvent(QMouseEvent* event)
 void CropEditor::mouseReleaseEvent(QMouseEvent*)
 {
     setCursor(Qt::ArrowCursor);
-    m_dragging = false;
-    m_resizing = false;
+    m_isDragging = false;
+    m_isResizing = false;
 }
 void CropEditor::wheelEvent(QWheelEvent* event)
 {
@@ -610,7 +543,7 @@ void CropEditor::wheelEvent(QWheelEvent* event)
 
 WatermarkAnchor CropEditor::resizeCorner(const QPoint& pos)
 {
-    const QRect crop = editor()->mapFrom(m_crop);
+    const QRect crop = editor()->mapFrom(m_cropForm->cropRect());
     const int length = qMin(20, qMin(crop.width(), crop.height()));
     const QSize resizeSize(length, length);
     const QSize vResizer(length, 15);
@@ -643,164 +576,151 @@ WatermarkAnchor CropEditor::resizeCorner(const QPoint& pos)
 // class WatermarkEditor
 // ========================================================
 
-WatermarkEditor::WatermarkEditor(QWidget* parent)
+WatermarkEditor::WatermarkEditor(Editor* parent)
     : QWidget(parent)
+    , m_cropForm(nullptr)
+    , m_watermarkForm(nullptr)
 {
-    m_anchor = AnchorCenter;
 }
 
 void WatermarkEditor::drawWatermark(QPainter* painter, bool scaled)
 {
-    if (!m_watermark.isNull()) {
-        // Computes the watermark position
-        QRectF crop = scaled ? editor()->mapFrom(QRectF(m_crop)) : m_crop;
-        QRectF rect;
-        QSizeF size;
-        if (m_useSize) {
-            size = m_watermark.size().scaled(crop.width() / 3.0, crop.height() / 3.0, Qt::KeepAspectRatio);
-            size = size.scaled(size * m_size, Qt::KeepAspectRatio);
-        } else {
-            size = scaled ? editor()->mapFrom(QSizeF(m_watermark.size())) : QSizeF(m_watermark.size());
+    if (m_watermark.isNull())
+        return;
+
+    // Computes the watermark position
+    QRectF cropRect = scaled ? editor()->mapFrom(QRectF(m_cropForm->cropRect())) : m_cropForm->cropRect();
+    QRectF rect;
+    QSizeF size;
+    if (m_watermarkForm->watermarkUseSize()) {
+        qreal scaleFactor = m_watermarkForm->watermarkSize();
+        size = m_watermark.size().scaled(cropRect.width() / 3.0, cropRect.height() / 3.0, Qt::KeepAspectRatio);
+        size = size.scaled(size * scaleFactor, Qt::KeepAspectRatio);
+    } else {
+        size = scaled ? editor()->mapFrom(QSizeF(m_watermark.size())) : QSizeF(m_watermark.size());
+    }
+
+    if (m_watermarkForm->watermarkAnchor() != AnchorRepeated) {
+        updatePosition();
+        rect = QRectF(scaled ? editor()->mapFrom(QPointF(m_cachedWatermarkPos)) : QPointF(m_cachedWatermarkPos), size);
+    }
+
+    int rotation = 0;
+    if (m_watermarkForm->watermarkUseRotation())
+        rotation = m_watermarkForm->watermarkRotation();
+
+    // Draw the watermark
+    QPixmap image;
+    if (m_watermarkForm->watermarkUseColor()) {
+        QColor color = m_watermarkForm->watermarkColor();
+        if (!m_hasCachedColoredWatermark || m_cachedWatermarkColor != color)
+            computeColoredWatermark(color);
+
+        image = m_coloredWatermark.scaled(size.toSize());
+    } else {
+        image = m_watermark.scaled(size.toSize());
+    }
+
+    if (scaled) {
+        painter->translate(cropRect.topLeft());
+    }
+
+    painter->setOpacity(m_watermarkForm->watermarkOpacity());
+    painter->setClipRect(QRectF(0, 0, cropRect.width(), cropRect.height()));
+    if (m_watermarkForm->watermarkAnchor() != AnchorRepeated) {
+        const qreal width = size.width();
+        const qreal height = size.height();
+
+        qreal translatedX = (rect.x() + width / 2.0);
+        qreal translatedY = (rect.y() + height / 2.0);
+
+        if (m_watermarkForm->watermarkUseOffset()) {
+            QPoint offset = m_watermarkForm->watermarkOffset();
+            translatedX += offset.x();
+            translatedY += offset.y();
         }
 
-        if (m_anchor != AnchorRepeated) {
-            updatePosition();
-            rect = QRectF(scaled ? editor()->mapFrom(QPointF(m_pos)) : QPointF(m_pos), size);
+        painter->translate(translatedX, translatedY);
+        painter->rotate(rotation);
+        painter->drawPixmap(QRectF(-width / 2.0, -height / 2.0, width, height), image, image.rect());
+    } else {
+        QBrush brush(image);
+        painter->setBrush(brush);
+        painter->setPen(Qt::NoPen);
+
+        const qreal width = cropRect.size().width() * 2.0;
+        const qreal height = cropRect.size().height() * 2.0;
+
+        qreal translatedX = cropRect.size().width() / 2.0;
+        qreal translatedY = cropRect.size().height() / 2.0;
+
+        if (m_watermarkForm->watermarkUseOffset()) {
+            QPoint offset = m_watermarkForm->watermarkOffset();
+            translatedX += offset.x();
+            translatedY += offset.y();
         }
 
-        int rotation = 0;
-        if (m_useRotation)
-            rotation = m_rotation;
-
-        // Draw the watermark
-        QPixmap image = (m_useColor ? m_coloredWatermark : m_watermark).scaled(size.toSize());
-        if (scaled)
-            painter->translate(crop.topLeft());
-        painter->setOpacity(m_opacity);
-        painter->setClipRect(QRectF(0, 0, crop.width(), crop.height()));
-        if (m_anchor != AnchorRepeated) {
-            const qreal width = size.width();
-            const qreal height = size.height();
-
-            qreal translatedX = (rect.x() + width / 2.0);
-            qreal translatedY = (rect.y() + height / 2.0);
-
-            if (m_useOffset) {
-                translatedX += m_offset.x();
-                translatedY += m_offset.y();
-            }
-
-            painter->translate(translatedX, translatedY);
-            painter->rotate(rotation);
-            painter->drawPixmap(QRectF(-width / 2.0, -height / 2.0, width, height), image, image.rect());
-        } else {
-            QBrush brush(image);
-            painter->setBrush(brush);
-            painter->setPen(Qt::NoPen);
-
-            const qreal width = crop.size().width() * 2.0;
-            const qreal height = crop.size().height() * 2.0;
-
-            qreal translatedX = crop.size().width() / 2.0;
-            qreal translatedY = crop.size().height() / 2.0;
-
-            if (m_useOffset) {
-                translatedX += m_offset.x();
-                translatedY += m_offset.y();
-            }
-
-            painter->translate(translatedX, translatedY);
-            painter->rotate(rotation);
-            painter->drawRect(QRectF(-translatedX * 2, -translatedY * 2, width, height));
-        }
+        painter->translate(translatedX, translatedY);
+        painter->rotate(rotation);
+        painter->drawRect(QRectF(-translatedX * 2, -translatedY * 2, width, height));
     }
 }
 
 void WatermarkEditor::updatePosition()
 {
-    int cropWidth = m_crop.width();
-    int cropHeight = m_crop.height();
-    int halfCropWidth = m_crop.width() / 2;
-    int halfCropHeight = m_crop.height() / 2;
+    const QRect cropRect = m_cropForm->cropRect();
+    const int halfCropWidth = cropRect.width() / 2;
+    const int halfCropHeight = cropRect.height() / 2;
 
     QSize size;
-    if (m_useSize) {
-        size = m_watermark.size().scaled(m_crop.width() * 1 / 3, m_crop.height() * 1 / 3, Qt::KeepAspectRatio);
-        size = size.scaled(size * m_size, Qt::KeepAspectRatio);
+    if (m_watermarkForm->watermarkUseSize()) {
+        qreal scaleFactor = m_watermarkForm->watermarkSize();
+        size = m_watermark.size().scaled(cropRect.width() * 1 / 3, cropRect.height() * 1 / 3, Qt::KeepAspectRatio);
+        size = size.scaled(size * scaleFactor, Qt::KeepAspectRatio);
     } else {
         size = m_watermark.size();
     }
-    int width = size.width();
-    int height = size.height();
-    int halfWidth = size.width() / 2;
-    int halfHeight = size.height() / 2;
 
-    switch (m_anchor) {
+    const int halfWidth = size.width() / 2;
+    const int halfHeight = size.height() / 2;
+
+    switch (m_watermarkForm->watermarkAnchor()) {
     case AnchorRepeated:
-        m_pos = QPoint(0, 0);
+        m_cachedWatermarkPos = QPoint(0, 0);
         break;
     case AnchorTop:
-        m_pos = QPoint(halfCropWidth - halfWidth, 0);
+        m_cachedWatermarkPos = QPoint(halfCropWidth - halfWidth, 0);
         break;
     case AnchorTopLeft:
-        m_pos = QPoint(0, 0);
+        m_cachedWatermarkPos = QPoint(0, 0);
         break;
     case AnchorTopRight:
-        m_pos = QPoint(cropWidth - width, 0);
+        m_cachedWatermarkPos = QPoint(cropRect.width() - size.width(), 0);
         break;
     case AnchorLeft:
-        m_pos = QPoint(0, halfCropHeight - halfHeight);
+        m_cachedWatermarkPos = QPoint(0, halfCropHeight - halfHeight);
         break;
     case AnchorRight:
-        m_pos = QPoint(cropWidth - width, halfCropHeight - halfHeight);
+        m_cachedWatermarkPos = QPoint(cropRect.width() - size.width(), halfCropHeight - halfHeight);
         break;
     case AnchorBottom:
-        m_pos = QPoint(halfCropWidth - halfWidth, cropHeight - height);
+        m_cachedWatermarkPos = QPoint(halfCropWidth - halfWidth, cropRect.height() - size.height());
         break;
     case AnchorBottomLeft:
-        m_pos = QPoint(0, cropHeight - height);
+        m_cachedWatermarkPos = QPoint(0, cropRect.height() - size.height());
         break;
     case AnchorBottomRight:
-        m_pos = QPoint(cropWidth - width, cropHeight - height);
+        m_cachedWatermarkPos = QPoint(cropRect.width() - size.width(), cropRect.height() - size.height());
         break;
     case AnchorCenter:
-        m_pos = QPoint(halfCropWidth - halfWidth, halfCropHeight - halfHeight);
+        m_cachedWatermarkPos = QPoint(halfCropWidth - halfWidth, halfCropHeight - halfHeight);
         break;
     }
-}
-void WatermarkEditor::setCrop(const QRect& crop)
-{
-    m_crop = crop;
-    updatePosition();
-    update();
 }
 void WatermarkEditor::setWatermark(const QPixmap& pixmap)
 {
     m_watermark = pixmap;
-    if (m_useColor) {
-        setColor(m_color);
-    } else {
-        m_coloredWatermark = m_watermark;
-    }
     updatePosition();
-    update();
-}
-void WatermarkEditor::setColor(const QColor& color)
-{
-    m_coloredWatermark = m_watermark;
-    if (!m_coloredWatermark.isNull()) {
-        QPainter painter(&m_coloredWatermark);
-        painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
-        painter.fillRect(m_coloredWatermark.rect(), color);
-        painter.end();
-    }
-
-    m_color = color;
-    update();
-}
-void WatermarkEditor::setUseColor(bool use)
-{
-    m_useColor = use;
     update();
 }
 
@@ -812,4 +732,18 @@ void WatermarkEditor::paintEvent(QPaintEvent*)
 void WatermarkEditor::wheelEvent(QWheelEvent* event)
 {
     editor()->processWheelEvent(event);
+}
+
+void WatermarkEditor::computeColoredWatermark(const QColor& color)
+{
+    m_coloredWatermark = m_watermark;
+    if (!m_coloredWatermark.isNull()) {
+        QPainter painter(&m_coloredWatermark);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+        painter.fillRect(m_coloredWatermark.rect(), color);
+        painter.end();
+    }
+
+    m_cachedWatermarkColor = color;
+    m_hasCachedColoredWatermark = true;
 }

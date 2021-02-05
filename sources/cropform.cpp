@@ -64,12 +64,12 @@ void CropForm::setImageRect(const QRect& rect)
 void CropForm::setCropRect(const QRect& crop)
 {
     m_crop = crop;
-    ui->xEdit->setMaximum(m_image.width() - crop.width());
-    ui->xEdit->setValue(crop.x());
-    ui->yEdit->setMaximum(m_image.height() - crop.height());
-    ui->yEdit->setValue(crop.y());
-    ui->widthEdit->setValue(crop.width());
-    ui->heightEdit->setValue(crop.height());
+    ui->xEdit->setMaximum(m_image.width() - m_crop.width());
+    ui->xEdit->setValue(m_crop.x());
+    ui->yEdit->setMaximum(m_image.height() - m_crop.height());
+    ui->yEdit->setValue(m_crop.y());
+    ui->widthEdit->setValue(m_crop.width());
+    ui->heightEdit->setValue(m_crop.height());
 }
 void CropForm::setCropPosition(const QPoint& pos)
 {
@@ -86,15 +86,12 @@ void CropForm::setCropFixed(bool fixed)
 
 void CropForm::initSignals()
 {
-    connect(ui->xEdit, QOverload<int>::of(&QSpinBox::valueChanged), [this](int x) { m_crop.moveTo(x, m_crop.y()); emit cropMoved(m_crop.topLeft()); });
-    connect(ui->yEdit, QOverload<int>::of(&QSpinBox::valueChanged), [this](int y) { m_crop.moveTo(m_crop.x(), y); emit cropMoved(m_crop.topLeft()); });
+    connect(ui->xEdit, QOverload<int>::of(&QSpinBox::valueChanged), [this](int x) { m_crop.moveTo(x, m_crop.y()); emit cropRectEdited(); });
+    connect(ui->yEdit, QOverload<int>::of(&QSpinBox::valueChanged), [this](int y) { m_crop.moveTo(m_crop.x(), y); emit cropRectEdited(); });
     connect(ui->widthEdit, QOverload<int>::of(&QSpinBox::valueChanged), this, &CropForm::setWidth);
     connect(ui->heightEdit, QOverload<int>::of(&QSpinBox::valueChanged), this, &CropForm::setHeight);
     connect(ui->fixedCheckBox, &QCheckBox::toggled, [this]() { m_aspectRatio = double(m_crop.width()) / double(m_crop.height()); });
     connect(ui->comboBuiltinRatio, &QComboBox::currentTextChanged, this, &CropForm::setRatio);
-    connect(this, &CropForm::cropResized, [this]() { emit cropEdited(m_crop);  });
-    connect(this, &CropForm::cropMoved, [this]() { emit cropEdited(m_crop); });
-    connect(this, &CropForm::cropEdited, [this]() { ui->comboBuiltinRatio->setCurrentIndex(0); });
 }
 
 void CropForm::setRatio(const QString& text)
@@ -113,7 +110,7 @@ void CropForm::setWidth(int w)
     } else {
         setCropSize(QSize(w, m_crop.height()));
     }
-    emit cropResized(m_crop.size());
+    emit cropRectEdited();
 }
 void CropForm::setHeight(int h)
 {
@@ -122,5 +119,5 @@ void CropForm::setHeight(int h)
     } else {
         setCropSize(QSize(m_crop.width(), h));
     }
-    emit cropResized(m_crop.size());
+    emit cropRectEdited();
 }
