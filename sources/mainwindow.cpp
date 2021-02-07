@@ -100,6 +100,8 @@ void MainWindow::setImage(const QPixmap& image)
 void MainWindow::loadImage(const QString& path)
 {
     QImageReader reader(path);
+    reader.setAutoTransform(true);
+
     const QImage image = reader.read();
     if (image.isNull()) {
         QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
