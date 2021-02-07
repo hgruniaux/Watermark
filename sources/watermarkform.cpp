@@ -141,7 +141,7 @@ bool WatermarkForm::watermarkUseRotation() const
 }
 int WatermarkForm::watermarkRotation() const
 {
-    return 359 - ui->rotationSpinBox->value();
+    return 360 - ui->rotationSpinBox->value();
 }
 bool WatermarkForm::watermarkUseColor() const
 {
