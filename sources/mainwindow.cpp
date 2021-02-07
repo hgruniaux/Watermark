@@ -34,7 +34,7 @@
 #include <QProxyStyle>
 #include <QStyleOption>
 
-#include <QDebug>
+#include <QMimeDatabase>
 
 #include "mainwindow.hpp"
 #include "reportissuedialog.hpp"
@@ -156,13 +156,28 @@ void MainWindow::setPreset(const Preset& preset)
 
 void MainWindow::openImage()
 {
-    const QString path = QFileDialog::getOpenFileName(this,
-        tr("Open image"),
-        QString(),
-        "Images (*.jpg *.png *.gif);; Others (*)");
-    if (!path.isEmpty()) {
-        loadImage(path);
+    QMimeDatabase mimeDb;
+    QStringList filters;
+    for (const auto& mimeTypeData : QImageReader::supportedMimeTypes()) {
+        QMimeType mimeType = mimeDb.mimeTypeForName(mimeTypeData);
+        filters += mimeType.globPatterns().join(';');
     }
+
+    QFileDialog fileDialog;
+
+    fileDialog.setWindowTitle(tr("Open image"));
+    fileDialog.setNameFilter(tr("Images (%0)").arg(filters.join(';')));
+    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
+    fileDialog.setFileMode(QFileDialog::ExistingFile);
+
+    if (fileDialog.exec() != QDialog::Accepted)
+        return;
+
+    QStringList selectedFiles = fileDialog.selectedFiles();
+    if (selectedFiles.isEmpty())
+        return;
+
+    loadImage(selectedFiles[0]);
 }
 void MainWindow::saveImage()
 {
