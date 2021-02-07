@@ -99,25 +99,31 @@ void CropForm::setRatio(const QString& text)
     int index = text.indexOf(':');
     if(index < 0) return;
     int left = text.left(index).toInt();
-    int right = text.mid(index+1).toInt();
+    int right = text.mid(index + 1).toInt();
     double ratio = double(left) / double(right);
     setCropSize(QSize(m_image.width(), m_image.height()/ratio));
 }
 void CropForm::setWidth(int w)
 {
+    w = qMax(kMinSize.width(), w);
+
     if(ui->fixedCheckBox->isChecked()) {
         setCropSize(QSize(w, qRound(w / m_aspectRatio)));
     } else {
         setCropSize(QSize(w, m_crop.height()));
     }
+
     emit cropRectEdited();
 }
 void CropForm::setHeight(int h)
 {
+    h = qMax(kMinSize.height(), h);
+
     if(ui->fixedCheckBox->isChecked()) {
         setCropSize(QSize(qRound(h * m_aspectRatio), h));
     } else {
         setCropSize(QSize(m_crop.width(), h));
     }
+
     emit cropRectEdited();
 }

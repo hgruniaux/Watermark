@@ -45,6 +45,8 @@ public:
     bool cropFixed() const;
     QRect cropRect() const { return m_crop; }
 
+    static constexpr QSize kMinSize = QSize(25, 25);
+
 signals:
     void cropRectEdited();
 
